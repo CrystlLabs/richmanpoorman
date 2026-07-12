@@ -45,11 +45,14 @@
         @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
         .handshake-big { animation: grow .5s ease-out; }
         @keyframes grow { 0%{transform:scale(.3) rotate(-15deg)} 70%{transform:scale(1.15)} 100%{transform:scale(1)} }
+        #questionCard.compact { padding: .5rem 1rem !important; margin-bottom: .375rem !important; }
+        #questionCard.compact #qEyebrow { display: none; }
+        #questionCard.compact #statement { font-size: 1rem !important; line-height: 1.3 !important; }
     </style>
 </head>
 <body class="bg-darkBg text-white font-sans antialiased min-h-screen flex flex-col selection:bg-gold selection:text-black">
 
-    <header class="p-4 flex justify-between items-center border-b border-white/10 bg-black/40 backdrop-blur-md sticky top-0 z-40">
+    <header class="py-2 px-4 flex justify-between items-center border-b border-white/10 bg-black/40 backdrop-blur-md sticky top-0 z-40">
         <div class="text-xl md:text-2xl tracking-wide cursor-pointer" onclick="goHome()">
             <span class="font-rich font-black text-gold">RICH MAN</span>
             <span class="text-white/40 mx-1">🤝</span>
@@ -58,7 +61,7 @@
         <div class="text-xs font-bold bg-white/10 px-4 py-1.5 rounded-full border border-white/10 hidden sm:block">THE MIDDLE CLASS ALWAYS LOSES</div>
     </header>
 
-    <main class="flex-1 flex flex-col items-center p-6 w-full max-w-3xl mx-auto">
+    <main class="flex-1 flex flex-col items-center justify-center px-6 py-2 w-full max-w-3xl mx-auto">
 
         <!-- ============ START SCREEN ============ -->
         <div id="startScreen" class="w-full flex flex-col items-center">
@@ -140,65 +143,65 @@
 
         <!-- ============ GAME SCREEN ============ -->
         <div id="gameScreen" class="w-full hidden flex-col items-center">
-            <div class="w-full flex justify-between items-center mb-6 mt-2">
+            <div class="w-full flex justify-between items-center mb-2">
                 <div id="roundDots" class="flex gap-1.5"></div>
                 <div class="text-right">
-                    <span class="text-2xl font-black text-gold" id="scoreDisplay">0</span>
+                    <span class="text-xl md:text-2xl font-black text-gold" id="scoreDisplay">0</span>
                     <span class="text-xs text-gray-500 uppercase tracking-widest ml-1">pts</span>
                     <div id="streakDisplay" class="text-[11px] text-cash font-bold h-4"></div>
                 </div>
             </div>
 
-            <div id="questionCard" class="w-full bg-panel rounded-[2rem] border border-white/10 p-8 md:p-12 shadow-2xl text-center relative overflow-hidden mb-6">
+            <div id="questionCard" class="w-full bg-panel rounded-[2rem] border border-white/10 p-5 md:p-7 shadow-2xl text-center relative overflow-hidden mb-4">
                 <div class="absolute -top-16 -left-16 w-40 h-40 bg-cash/10 rounded-full blur-3xl pointer-events-none"></div>
-                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.25em] mb-6">Who does this?</p>
-                <p id="statement" class="text-2xl md:text-4xl font-black leading-tight"></p>
+                <p id="qEyebrow" class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.25em] mb-3">Who does this?</p>
+                <p id="statement" class="text-xl md:text-2xl font-black leading-tight"></p>
             </div>
 
-            <div id="answerBtns" class="grid grid-cols-2 gap-3 w-full">
-                <button onclick="answer('rich')" class="ansBtn py-5 rounded-2xl border-2 border-gold/40 bg-gold/5 hover:bg-gold/20 hover:border-gold transition font-black text-lg">
+            <div id="answerBtns" class="grid grid-cols-2 gap-2 w-full">
+                <button onclick="answer('rich')" class="ansBtn py-3.5 rounded-2xl border-2 border-gold/40 bg-gold/5 hover:bg-gold/20 hover:border-gold transition font-black text-base md:text-lg">
                     🎩 <span class="font-rich">Rich Man</span>
                 </button>
-                <button onclick="answer('poor')" class="ansBtn py-5 rounded-2xl border-2 border-cash/40 bg-cash/5 hover:bg-cash/20 hover:border-cash transition font-black text-lg">
+                <button onclick="answer('poor')" class="ansBtn py-3.5 rounded-2xl border-2 border-cash/40 bg-cash/5 hover:bg-cash/20 hover:border-cash transition font-black text-base md:text-lg">
                     🥫 <span class="font-poor font-normal">Poor Man</span>
                 </button>
-                <button onclick="answer('both')" class="ansBtn py-5 rounded-2xl border-2 border-white/30 bg-white/5 hover:bg-white/15 hover:border-white transition font-black text-lg">
+                <button onclick="answer('both')" class="ansBtn py-3.5 rounded-2xl border-2 border-white/30 bg-white/5 hover:bg-white/15 hover:border-white transition font-black text-base md:text-lg">
                     🤝 BOTH!
                 </button>
-                <button onclick="answer('mid')" class="ansBtn py-5 rounded-2xl border-2 border-mid/30 bg-mid/5 hover:bg-mid/20 hover:border-mid transition font-black text-lg text-mid">
+                <button onclick="answer('mid')" class="ansBtn py-3.5 rounded-2xl border-2 border-mid/30 bg-mid/5 hover:bg-mid/20 hover:border-mid transition font-black text-base md:text-lg text-mid">
                     📊 Middle Class
                 </button>
             </div>
 
             <!-- Reveal -->
             <div id="reveal" class="w-full hidden card-flip">
-                <div class="bg-panel rounded-[2rem] border p-7 md:p-9 shadow-2xl mb-4" id="revealBox">
-                    <div class="text-center mb-6">
-                        <div id="revealEmoji" class="text-6xl mb-3"></div>
-                        <h3 id="revealTitle" class="text-3xl font-black"></h3>
-                        <p id="revealSub" class="text-gray-400 text-sm mt-1"></p>
+                <div class="bg-panel rounded-[2rem] border p-2.5 md:p-3 shadow-2xl mb-1.5" id="revealBox">
+                    <div class="text-center mb-1.5">
+                        <div id="revealEmoji" class="text-xl md:text-2xl mb-0.5"></div>
+                        <h3 id="revealTitle" class="text-base md:text-lg font-black"></h3>
+                        <p id="revealSub" class="text-gray-400 text-xs mt-0.5"></p>
                     </div>
-                    <div class="space-y-3 text-sm md:text-base">
-                        <div class="flex gap-3 items-start bg-gold/5 border border-gold/20 rounded-xl p-3">
+                    <div class="space-y-1 text-xs md:text-sm">
+                        <div class="flex gap-2 items-start bg-gold/5 border border-gold/20 rounded-xl p-1.5">
                             <span class="shrink-0">🎩</span><p><span class="text-gold font-bold">Rich man:</span> <span id="lineRich" class="text-gray-300"></span></p>
                         </div>
-                        <div class="flex gap-3 items-start bg-cash/5 border border-cash/20 rounded-xl p-3">
+                        <div class="flex gap-2 items-start bg-cash/5 border border-cash/20 rounded-xl p-1.5">
                             <span class="shrink-0">🥫</span><p><span class="text-cash font-bold">Poor man:</span> <span id="linePoor" class="text-gray-300"></span></p>
                         </div>
-                        <div class="flex gap-3 items-start bg-white/5 border border-white/10 rounded-xl p-3">
+                        <div class="flex gap-2 items-start bg-white/5 border border-white/10 rounded-xl p-1.5">
                             <span class="shrink-0">📊</span><p><span class="text-mid font-bold">Middle class:</span> <span id="lineMid" class="text-gray-300"></span></p>
                         </div>
                     </div>
-                    <div class="flex gap-2 mt-5">
-                        <button id="likeBtn" onclick="likeCurrent()" class="flex-1 py-3 rounded-xl border-2 border-white/15 hover:border-gold hover:bg-gold/10 transition font-bold text-sm text-gray-300">
+                    <div class="flex gap-2 mt-1.5">
+                        <button id="likeBtn" onclick="likeCurrent()" class="flex-1 py-1.5 rounded-xl border-2 border-white/15 hover:border-gold hover:bg-gold/10 transition font-bold text-xs md:text-sm text-gray-300">
                             👍 Solid one <span id="likeCount" class="text-gray-500"></span>
                         </button>
-                        <button onclick="shareCard()" title="Share this one" class="shrink-0 px-5 py-3 rounded-xl border-2 border-white/15 hover:border-cash hover:bg-cash/10 transition font-bold text-sm text-gray-300">
+                        <button onclick="shareCard()" title="Share this one" class="shrink-0 px-4 py-1.5 rounded-xl border-2 border-white/15 hover:border-cash hover:bg-cash/10 transition font-bold text-xs md:text-sm text-gray-300">
                             📤 Share it
                         </button>
                     </div>
                 </div>
-                <button onclick="nextRound()" id="nextBtn" class="w-full py-5 bg-gold text-black font-black rounded-2xl hover:bg-yellow-400 transition text-lg uppercase tracking-widest">
+                <button onclick="nextRound()" id="nextBtn" class="w-full py-2 md:py-2.5 bg-gold text-black font-black rounded-2xl hover:bg-yellow-400 transition text-sm md:text-base uppercase tracking-widest">
                     Next →
                 </button>
             </div>
@@ -234,7 +237,7 @@
         </div>
     </main>
 
-    <footer class="p-6 text-center">
+    <footer id="siteFooter" class="p-6 text-center">
         <a href="https://crystllabs.com" class="text-[11px] font-bold tracking-widest text-gray-600 hover:text-gold transition uppercase">A Crystl Labs Experiment</a>
     </footer>
 
@@ -1190,12 +1193,14 @@
         $('startScreen').classList.add('hidden');
         $('endScreen').classList.add('hidden'); $('endScreen').classList.remove('flex');
         $('gameScreen').classList.remove('hidden'); $('gameScreen').classList.add('flex');
+        $('siteFooter').classList.add('hidden');
         showRound();
         window.scrollTo(0, 0);
     }
 
     function showRound() {
         current = deck[round]; answered = false;
+        $('questionCard').classList.remove('compact');
         $('statement').innerText = current.s;
         $('questionCard').classList.remove('card-flip'); void $('questionCard').offsetWidth;
         $('questionCard').classList.add('card-flip');
@@ -1210,6 +1215,7 @@
     function answer(choice) {
         if (answered) return; answered = true;
         const right = choice === current.a;
+        $('questionCard').classList.add('compact');
         results.push(right);
         if (right) { streak++; correct++; score += 100 + (streak >= 2 ? streak * 25 : 0); }
         else { streak = 0; }
@@ -1340,6 +1346,7 @@
         $('gameScreen').classList.add('hidden'); $('gameScreen').classList.remove('flex');
         $('endScreen').classList.add('hidden'); $('endScreen').classList.remove('flex');
         $('startScreen').classList.remove('hidden');
+        $('siteFooter').classList.remove('hidden');
         renderTop5(); renderBest(); renderSubs();
         window.scrollTo(0, 0);
     }
