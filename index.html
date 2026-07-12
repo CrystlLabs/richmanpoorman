@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rich Man Poor Man // Crystl Labs</title>
+    <meta name="description" content="The game of finding what the filthy rich and the dirt poor have in common — while the middle class pays full price.">
+    <meta name="darkreader-lock">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#0a0c0a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <meta property="og:title" content="Rich Man Poor Man — The Game">
+    <meta property="og:description" content="Guess what the filthy rich and the dirt poor have in common — the middle class always loses. Hundreds of scenarios, daily challenge, free to play.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://richmanpoorman.crystllabs.com/">
+    <meta property="og:image" content="https://richmanpoorman.crystllabs.com/og.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Rich Man Poor Man — The Game">
+    <meta name="twitter:description" content="Guess what the filthy rich and the dirt poor have in common — the middle class always loses.">
+    <meta name="twitter:image" content="https://richmanpoorman.crystllabs.com/og.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Permanent+Marker&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { gold: '#d4af37', cash: '#3fb950', darkBg: '#0a0c0a', panel: '#131613', mid: '#8b98a5' },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        rich: ['"Playfair Display"', 'serif'],
+                        poor: ['"Permanent Marker"', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .card-flip { animation: pop .25s ease-out; }
+        @keyframes pop { 0% { transform: scale(.96); opacity: .4; } 100% { transform: scale(1); opacity: 1; } }
+        .shake { animation: shake .35s ease-in-out; }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+        .handshake-big { animation: grow .5s ease-out; }
+        @keyframes grow { 0%{transform:scale(.3) rotate(-15deg)} 70%{transform:scale(1.15)} 100%{transform:scale(1)} }
+    </style>
+</head>
+<body class="bg-darkBg text-white font-sans antialiased min-h-screen flex flex-col selection:bg-gold selection:text-black">
+
+    <header class="p-4 flex justify-between items-center border-b border-white/10 bg-black/40 backdrop-blur-md sticky top-0 z-40">
+        <div class="text-xl md:text-2xl tracking-wide cursor-pointer" onclick="goHome()">
+            <span class="font-rich font-black text-gold">RICH MAN</span>
+            <span class="text-white/40 mx-1">🤝</span>
+            <span class="font-poor text-cash">POOR MAN</span>
+        </div>
+        <div class="text-xs font-bold bg-white/10 px-4 py-1.5 rounded-full border border-white/10 hidden sm:block">THE MIDDLE CLASS ALWAYS LOSES</div>
+    </header>
+
+    <main class="flex-1 flex flex-col items-center p-6 w-full max-w-3xl mx-auto">
+
+        <!-- ============ START SCREEN ============ -->
+        <div id="startScreen" class="w-full flex flex-col items-center">
+            <div class="text-center mt-6 mb-8">
+                <h1 class="text-4xl md:text-6xl leading-tight">
+                    <span class="font-rich font-black text-gold">RICH MAN</span><br>
+                    <span class="font-poor text-cash">POOR MAN</span>
+                </h1>
+                <p class="text-gray-400 mt-6 max-w-xl mx-auto leading-relaxed">
+                    The party game of class warfare: some things only the
+                    <span class="text-gold font-bold">filthy rich</span> do. Some things only the
+                    <span class="text-cash font-bold">dirt poor</span> do. But the magic happens when
+                    <span class="text-white font-bold">BOTH</span> do it — and the middle class gets left holding the bill.
+                </p>
+                <p class="text-gray-500 mt-3 text-sm italic">"Rich man, poor man... neither one pays taxes." 🤝</p>
+            </div>
+
+            <button onclick="startGame('daily')" id="dailyBtn" class="w-full max-w-sm py-5 bg-gold text-black font-black rounded-2xl hover:bg-yellow-400 hover:scale-[1.02] transition-all text-xl uppercase tracking-widest shadow-[0_0_30px_rgba(212,175,55,0.25)] mb-3">
+                🗓️ Daily Challenge
+            </button>
+            <p id="dailyStatus" class="text-[11px] text-gray-500 uppercase tracking-widest mb-4"></p>
+            <button onclick="startGame('free')" class="w-full max-w-sm py-4 border-2 border-white/15 text-white font-black rounded-2xl hover:bg-white/10 hover:border-white/40 transition text-base uppercase tracking-widest mb-2">
+                Free Play — Endless
+            </button>
+            <p id="deckSize" class="text-[11px] text-gray-600 uppercase tracking-widest mb-2"></p>
+            <p id="bestScore" class="text-xs text-gray-500 mb-3"></p>
+            <button id="installBtn" onclick="installApp()" class="hidden mb-8 px-6 py-2.5 rounded-full border-2 border-gold/40 text-gold text-xs font-black uppercase tracking-widest hover:bg-gold/10 hover:border-gold transition">
+                📲 Install the App
+            </button>
+
+            <!-- TOP 5 HALL OF FAME -->
+            <div class="w-full bg-panel rounded-[2rem] border border-white/10 p-6 md:p-8 shadow-2xl relative overflow-hidden mb-8">
+                <div class="absolute -top-20 -right-20 w-48 h-48 bg-gold/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="flex items-center justify-between mb-5">
+                    <h2 class="font-black uppercase tracking-[0.2em] text-sm text-gold">🏆 Hall of Fame — Top 5</h2>
+                    <span class="text-[10px] text-gray-500 uppercase tracking-widest">Most-liked by players</span>
+                </div>
+                <div id="top5" class="space-y-3"></div>
+                <p class="text-[11px] text-gray-600 mt-5 text-center">Play a round and 👍 the ones that hit. Your votes shape the board.</p>
+            </div>
+
+            <!-- COMMUNITY PICKS -->
+            <div class="w-full bg-panel rounded-[2rem] border border-white/10 p-6 md:p-8 shadow-2xl relative overflow-hidden mb-8">
+                <div class="absolute -bottom-20 -left-20 w-48 h-48 bg-cash/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="flex items-center justify-between mb-5">
+                    <h2 class="font-black uppercase tracking-[0.2em] text-sm text-cash">🗳️ Community Picks</h2>
+                    <span class="text-[10px] text-gray-500 uppercase tracking-widest">Player-submitted · vote 'em up</span>
+                </div>
+                <div id="subsList" class="space-y-3 relative"></div>
+            </div>
+
+            <!-- SUBMIT YOUR OWN -->
+            <div class="w-full bg-panel rounded-[2rem] border border-white/10 p-6 md:p-8 shadow-2xl relative overflow-hidden mb-8">
+                <div class="absolute -top-20 -right-20 w-48 h-48 bg-gold/10 rounded-full blur-3xl pointer-events-none"></div>
+                <h2 class="font-black uppercase tracking-[0.2em] text-sm text-gold mb-2">💡 Submit Your Own</h2>
+                <p class="text-xs text-gray-500 mb-5">Got a Rich Man Poor Man? Every submission runs through an automatic content check before it goes live on the board.</p>
+                <div class="space-y-3 relative">
+                    <input id="subStatement" maxlength="90" placeholder='The observation — e.g. "Both have a dog that rides shotgun"'
+                        class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-gray-600 outline-none focus:border-gold/60 transition text-sm">
+                    <select id="subCat" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white outline-none focus:border-gold/60 transition text-sm appearance-none">
+                        <option value="both">🤝 BOTH — a true Rich Man Poor Man</option>
+                        <option value="rich">🎩 Rich Man only</option>
+                        <option value="poor">🥫 Poor Man only</option>
+                        <option value="mid">📊 Middle Class only</option>
+                    </select>
+                    <input id="subWhy" maxlength="140" placeholder="Why it works (optional)"
+                        class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-gray-600 outline-none focus:border-gold/60 transition text-sm">
+                    <button onclick="submitIdea()" id="subBtn" class="w-full py-4 bg-gold text-black font-black rounded-xl hover:bg-yellow-400 transition uppercase tracking-widest text-sm">
+                        Run the Check &amp; Submit
+                    </button>
+                    <p id="subMsg" class="text-xs text-center font-bold min-h-[1rem]"></p>
+                </div>
+            </div>
+
+            <div class="text-center text-xs text-gray-600 max-w-md leading-relaxed">
+                No taxes were paid in the making of this game.
+            </div>
+        </div>
+
+        <!-- ============ GAME SCREEN ============ -->
+        <div id="gameScreen" class="w-full hidden flex-col items-center">
+            <div class="w-full flex justify-between items-center mb-6 mt-2">
+                <div id="roundDots" class="flex gap-1.5"></div>
+                <div class="text-right">
+                    <span class="text-2xl font-black text-gold" id="scoreDisplay">0</span>
+                    <span class="text-xs text-gray-500 uppercase tracking-widest ml-1">pts</span>
+                    <div id="streakDisplay" class="text-[11px] text-cash font-bold h-4"></div>
+                </div>
+            </div>
+
+            <div id="questionCard" class="w-full bg-panel rounded-[2rem] border border-white/10 p-8 md:p-12 shadow-2xl text-center relative overflow-hidden mb-6">
+                <div class="absolute -top-16 -left-16 w-40 h-40 bg-cash/10 rounded-full blur-3xl pointer-events-none"></div>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.25em] mb-6">Who does this?</p>
+                <p id="statement" class="text-2xl md:text-4xl font-black leading-tight"></p>
+            </div>
+
+            <div id="answerBtns" class="grid grid-cols-2 gap-3 w-full">
+                <button onclick="answer('rich')" class="ansBtn py-5 rounded-2xl border-2 border-gold/40 bg-gold/5 hover:bg-gold/20 hover:border-gold transition font-black text-lg">
+                    🎩 <span class="font-rich">Rich Man</span>
+                </button>
+                <button onclick="answer('poor')" class="ansBtn py-5 rounded-2xl border-2 border-cash/40 bg-cash/5 hover:bg-cash/20 hover:border-cash transition font-black text-lg">
+                    🥫 <span class="font-poor font-normal">Poor Man</span>
+                </button>
+                <button onclick="answer('both')" class="ansBtn py-5 rounded-2xl border-2 border-white/30 bg-white/5 hover:bg-white/15 hover:border-white transition font-black text-lg">
+                    🤝 BOTH!
+                </button>
+                <button onclick="answer('mid')" class="ansBtn py-5 rounded-2xl border-2 border-mid/30 bg-mid/5 hover:bg-mid/20 hover:border-mid transition font-black text-lg text-mid">
+                    📊 Middle Class
+                </button>
+            </div>
+
+            <!-- Reveal -->
+            <div id="reveal" class="w-full hidden card-flip">
+                <div class="bg-panel rounded-[2rem] border p-7 md:p-9 shadow-2xl mb-4" id="revealBox">
+                    <div class="text-center mb-6">
+                        <div id="revealEmoji" class="text-6xl mb-3"></div>
+                        <h3 id="revealTitle" class="text-3xl font-black"></h3>
+                        <p id="revealSub" class="text-gray-400 text-sm mt-1"></p>
+                    </div>
+                    <div class="space-y-3 text-sm md:text-base">
+                        <div class="flex gap-3 items-start bg-gold/5 border border-gold/20 rounded-xl p-3">
+                            <span class="shrink-0">🎩</span><p><span class="text-gold font-bold">Rich man:</span> <span id="lineRich" class="text-gray-300"></span></p>
+                        </div>
+                        <div class="flex gap-3 items-start bg-cash/5 border border-cash/20 rounded-xl p-3">
+                            <span class="shrink-0">🥫</span><p><span class="text-cash font-bold">Poor man:</span> <span id="linePoor" class="text-gray-300"></span></p>
+                        </div>
+                        <div class="flex gap-3 items-start bg-white/5 border border-white/10 rounded-xl p-3">
+                            <span class="shrink-0">📊</span><p><span class="text-mid font-bold">Middle class:</span> <span id="lineMid" class="text-gray-300"></span></p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 mt-5">
+                        <button id="likeBtn" onclick="likeCurrent()" class="flex-1 py-3 rounded-xl border-2 border-white/15 hover:border-gold hover:bg-gold/10 transition font-bold text-sm text-gray-300">
+                            👍 Solid one <span id="likeCount" class="text-gray-500"></span>
+                        </button>
+                        <button onclick="shareCard()" title="Share this one" class="shrink-0 px-5 py-3 rounded-xl border-2 border-white/15 hover:border-cash hover:bg-cash/10 transition font-bold text-sm text-gray-300">
+                            📤 Share it
+                        </button>
+                    </div>
+                </div>
+                <button onclick="nextRound()" id="nextBtn" class="w-full py-5 bg-gold text-black font-black rounded-2xl hover:bg-yellow-400 transition text-lg uppercase tracking-widest">
+                    Next →
+                </button>
+            </div>
+        </div>
+
+        <!-- ============ END SCREEN ============ -->
+        <div id="endScreen" class="w-full hidden flex-col items-center text-center">
+            <div class="bg-panel rounded-[2rem] border border-white/10 p-10 shadow-2xl w-full max-w-lg relative overflow-hidden mt-8">
+                <div class="absolute -top-20 -left-20 w-48 h-48 bg-gold/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div id="endEmoji" class="text-7xl mb-4 handshake-big">🤝</div>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.25em] mb-2">Your economic status</p>
+                <h2 id="rankTitle" class="text-4xl font-black text-gold mb-2"></h2>
+                <p id="rankDesc" class="text-gray-400 mb-1"></p>
+                <p class="text-2xl font-black mt-4"><span id="finalScore" class="text-gold"></span> <span class="text-sm text-gray-500 uppercase">pts</span> · <span id="finalCorrect"></span>/10</p>
+                <div id="emojiGrid" class="text-2xl tracking-wider my-5"></div>
+                <div class="space-y-3">
+                    <button id="nativeShareBtn" onclick="nativeShare()" class="w-full py-4 bg-white text-black font-black rounded-xl hover:opacity-90 transition">📤 Share Your Result</button>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="shareTo('x')" class="py-3 rounded-xl font-black text-sm bg-black border border-white/25 hover:bg-white/10 transition">𝕏</button>
+                        <button onclick="shareTo('facebook')" class="py-3 rounded-xl font-bold text-sm bg-[#1877f2] hover:opacity-90 transition">Facebook</button>
+                        <button onclick="shareTo('whatsapp')" class="py-3 rounded-xl font-bold text-sm bg-[#25d366] text-black hover:opacity-90 transition">WhatsApp</button>
+                        <button onclick="shareTo('reddit')" class="py-3 rounded-xl font-bold text-sm bg-[#ff4500] hover:opacity-90 transition">Reddit</button>
+                        <button onclick="shareTo('telegram')" class="py-3 rounded-xl font-bold text-sm bg-[#229ED9] hover:opacity-90 transition">Telegram</button>
+                        <button onclick="shareScore()" class="py-3 rounded-xl font-bold text-sm bg-white/10 border border-white/20 hover:bg-white/20 transition">📋 Copy</button>
+                    </div>
+                    <button onclick="startGame()" class="w-full py-4 bg-gold text-black font-black rounded-xl hover:bg-yellow-400 transition uppercase tracking-widest">Play Again</button>
+                    <button onclick="goHome()" class="w-full py-3 text-gray-400 font-bold rounded-xl border-2 border-white/10 hover:bg-white/5 transition text-sm">🏆 See Hall of Fame</button>
+                </div>
+                <div class="pt-6 mt-6 border-t border-white/10">
+                    <a href="https://crystllabs.com" class="inline-block text-xs font-bold tracking-widest text-gray-500 hover:text-gold transition uppercase">A Crystl Labs Experiment</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="p-6 text-center">
+        <a href="https://crystllabs.com" class="text-[11px] font-bold tracking-widest text-gray-600 hover:text-gold transition uppercase">A Crystl Labs Experiment</a>
+    </footer>
+
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white text-black font-bold px-6 py-3 rounded-full shadow-2xl opacity-0 pointer-events-none transition-opacity z-50 text-sm"></div>
+
+    <script>
+    // ====== THE DATABASE ======
+    // a: 'both' | 'rich' | 'poor' | 'mid'  — r/p/m: the comedic breakdown — L: seeded community likes
+    const ITEMS = [
+        // ---- THE CLASSICS: BOTH 🤝 ----
+        { s: "Doesn't pay taxes", a: 'both', L: 4812,
+          r: "Write-offs, loopholes, and an accountant named Saul.", p: "Under the threshold. The IRS owes HIM money.", m: "Pays full freight every April and gets audited anyway." },
+        { s: "Has 10 cars in the driveway", a: 'both', L: 3907,
+          r: "It's a 'collection.' The Ferrari has its own climate system.", p: "Two run. Three start with a screwdriver. The rest are 'parts cars.'", m: "Two sensible sedans, both financed at 7.9%." },
+        { s: "Spends all day in a bathrobe", a: 'both', L: 3544,
+          r: "Silk robe, poolside, cigar at 10am.", p: "Nowhere to be. The robe IS the outfit.", m: "Business casual by 7:15 or the manager notices." },
+        { s: "Takes their dog everywhere", a: 'both', L: 3221,
+          r: "The chihuahua has a seat on the jet and a therapist.", p: "Pit bull riding shotgun in the truck, no leash, no questions.", m: "Dog stays home alone 9 hours with a camera pointed at it." },
+        { s: "Has an outdoor shower", a: 'both', L: 2988,
+          r: "Teak and stone, next to the cabana.", p: "A garden hose zip-tied over a wooden pallet.", m: "Showers indoors like a sucker." },
+        { s: "Keeps chickens on the property", a: 'both', L: 2740,
+          r: "Heritage hens. The eggs are 'artisanal.' There's a chicken concierge.", p: "Yard birds. Nobody remembers buying them.", m: "HOA sent a letter just for googling 'coop.'" },
+        { s: "Day-drinks on a Tuesday", a: 'both', L: 2531,
+          r: "Rosé at the club after nine holes.", p: "Tallboy on the porch, supervising traffic.", m: "Sneaks a beer at 5:01pm and feels guilty about it." },
+        { s: "Doesn't have a job to go to", a: 'both', L: 2377,
+          r: "The money works so he doesn't have to.", p: "'Between opportunities' since 2019.", m: "Two weeks of PTO and he's saving them for a funeral." },
+        { s: "Lives behind a gate", a: 'both', L: 2140,
+          r: "Wrought iron, intercom, a guy named Franco decides if you exist.", p: "Chain-link with a padlock and a dog that means it.", m: "A welcome mat that says 'Live Laugh Love.'" },
+        { s: "Daily driver is 40 years old", a: 'both', L: 1998,
+          r: "Numbers-matching '65 Mustang. Waxed weekly by someone else.", p: "'85 Corolla held together by bumper stickers and hope.", m: "Leased Camry, 12,000 miles a year OR ELSE." },
+        { s: "Never mows their own lawn", a: 'both', L: 1876,
+          r: "A landscaping crew arrives like a military operation.", p: "The lawn is mostly dirt and one proud weed.", m: "Every Saturday, 9am, religiously, with ear protection." },
+        { s: "Never cooks dinner", a: 'both', L: 1744,
+          r: "The chef 'does a little something' every night.", p: "The dollar menu is a meal plan if you believe in yourself.", m: "Sunday meal-prep: chicken, rice, regret. Times five." },
+        { s: "Pays for everything in cash", a: 'both', L: 1687,
+          r: "A money clip of hundreds. Cards are for the staff.", p: "No bank account. The mattress IS the bank.", m: "Three credit cards in a points-optimization spreadsheet." },
+        { s: "Gets free food all the time", a: 'both', L: 1533,
+          r: "'Chef sent this out for you.' Never sees a bill.", p: "Knows every food bank schedule and every cousin's fridge.", m: "$18 salad, plus tip, plus the app's 'service fee.'" },
+        { s: "Someone else raises the kids", a: 'both', L: 1476,
+          r: "Nanny, tutor, boarding school, and a pony named Chad.", p: "Grandma. It's always Grandma.", m: "Does it all themselves on 6 hours of sleep and posts about it." },
+        { s: "Sleeps till noon", a: 'both', L: 1402,
+          r: "No alarm has ever been set in that house.", p: "No reason to get up before Judge Judy.", m: "Alarm at 6:15. Snooze once. Hate everything." },
+        { s: "Gambles constantly", a: 'both', L: 1350,
+          r: "High-stakes baccarat in Monaco. Loses a Porsche, laughs.", p: "Scratchers at the gas station. 'This one feels lucky.'", m: "Index funds only. Lives dangerously with a 3% bond tilt." },
+        { s: "Ends up on TV", a: 'both', L: 1289,
+          r: "A Bravo show about his real estate empire.", p: "A memorable episode of Cops.", m: "Local news interviewed him about traffic once. Still brings it up." },
+        { s: "Has relatives living on the property", a: 'both', L: 1204,
+          r: "It's called a 'family compound.' There are guest houses.", p: "Cousin's on the couch, uncle's in the garage, it's fine.", m: "Kids were invoiced for rent at 18." },
+        { s: "Gets driven everywhere", a: 'both', L: 1155,
+          r: "The driver waits outside with the engine running.", p: "The bus, or whichever cousin currently has a license.", m: "White-knuckles a 45-minute commute alone, twice a day." },
+        { s: "Burns stuff in the yard", a: 'both', L: 1092,
+          r: "A $6,000 fire feature imported from Tuscany.", p: "A burn barrel that has never once been cold.", m: "Read the county ordinance first. Twice." },
+        { s: "Shoots guns on their own property", a: 'both', L: 1033,
+          r: "A private skeet range behind the vineyard.", p: "Cans off the porch rail. Dinner might be involved.", m: "Books a lane at the indoor range and buys the punch card." },
+        { s: "Wears slippers all day", a: 'both', L: 967,
+          r: "Cashmere house slippers. Never touched pavement.", p: "Slides with socks, to the mailbox and beyond.", m: "Real shoes by 7am, orthopedic inserts by 40." },
+        { s: "Knows their lawyer personally", a: 'both', L: 921,
+          r: "On retainer. They vacation together.", p: "The public defender knows his coffee order.", m: "Used LegalZoom once for a will. Felt fancy." },
+        { s: "Never wears a suit", a: 'both', L: 870,
+          r: "Billionaire hoodie. The suit wears YOU, peasant.", p: "No dress code at no job.", m: "Owns four blazers for a job that requires exactly four blazers." },
+        { s: "Eats oxtail and bone marrow", a: 'both', L: 826,
+          r: "A $58 'heritage marrow' appetizer downtown.", p: "Grandma's recipe. It was the cheap cut, and it slaps.", m: "Boneless skinless chicken breast, seasoned with nothing." },
+        { s: "Vacations for a month straight", a: 'both', L: 781,
+          r: "'We summer in the Hamptons.' Summer is a verb.", p: "Technically every month is like this.", m: "Five PTO days, two spent at the DMV." },
+        { s: "Home security is a dog", a: 'both', L: 745,
+          r: "Two trained Belgian Malinois that answer to German.", p: "One pit bull and a hand-painted BEWARE sign.", m: "A Ring doorbell and a monthly subscription to watch it." },
+        { s: "Naps every afternoon", a: 'both', L: 692,
+          r: "It's called 'restorative wellness.' There's a nap room.", p: "Nothing but time, baby.", m: "Mainlines cold brew to survive the 3pm meeting." },
+        { s: "Gives their kids weird names", a: 'both', L: 655,
+          r: "Apple, Blue Ivy, X Æ A-12.", p: "Creative spelling: Aiden, Ayden, A'ydenn, Aden8.", m: "Emma. Liam. Emma again." },
+        { s: "Checks the numbers first thing every morning", a: 'both', L: 601,
+          r: "The portfolio, before coffee.", p: "The Powerball, before coffee.", m: "Work email, before getting out of bed. Saddest of all three." },
+        { s: "Owns horses", a: 'both', L: 566,
+          r: "An equestrian estate. The horses have staff.", p: "Rural, inherited, eats the lawn so nobody has to mow.", m: "One pony ride at the county fair, photographed extensively." },
+        { s: "Barters instead of paying", a: 'both', L: 512,
+          r: "'My guy will call your guy. We'll do it in equity.'", p: "Traded a flat-screen for brake work. Both parties satisfied.", m: "Pays sticker price, then adds the extended warranty." },
+        { s: "Has no mortgage", a: 'both', L: 478,
+          r: "Paid cash. Asked if the house came in a darker color.", p: "No bank on earth would. Rents from a guy named Lenny.", m: "30-year fixed. 28 to go. Doing great, thanks." },
+        { s: "Gets checks from the government", a: 'both', L: 441,
+          r: "Farm subsidies for a 'farm' that's mostly a tax opinion.", p: "Assistance, and earned every penny of it.", m: "Writes the checks. Receives a thank-you letter from no one." },
+        { s: "Everyone in town knows their name", a: 'both', L: 397,
+          r: "It's on the hospital wing.", p: "It's on the wall of the bail bonds place. Framed.", m: "The barista spells it wrong. Every day. On purpose, probably." },
+
+        // ---- RICH ONLY 🎩 ----
+        { s: "Has a wine cellar with a tasting room", a: 'rich', L: 240,
+          r: "Temperature-controlled. There's a sommelier on speed dial.", p: "The wine is in a box, and the box is the cellar.", m: "A wine fridge from Costco holding 11 bottles of Kirkland red." },
+        { s: "Watch costs more than a car", a: 'rich', L: 198,
+          r: "A Patek. You don't own it, you 'look after it for the next generation.'", p: "The phone is the watch, and the phone is cracked.", m: "An Apple Watch on a payment plan." },
+        { s: "Flies private", a: 'rich', L: 187,
+          r: "Wheels up in 20. The dog has a seatbelt.", p: "Greyhound. Also wheels up in 20, to be fair.", m: "Basic economy, middle seat, personal item ONLY." },
+        { s: "House has an elevator", a: 'rich', L: 166,
+          r: "Two, actually. One's for the staff.", p: "The stairs outside the unit count as cardio.", m: "A two-story colonial and a Fitbit guilt trip." },
+        { s: "Has staff quarters", a: 'rich', L: 154,
+          r: "The house for the people who run the house.", p: "He IS the staff. Someone else's, technically.", m: "A guest room that's 90% Peloton." },
+        { s: "The art needs its own insurance", a: 'rich', L: 139,
+          r: "A Basquiat in the hallway nobody uses.", p: "A velvet Elvis, priceless in its own way.", m: "Live Laugh Love, framed, from HomeGoods." },
+        { s: "Second passport 'just in case'", a: 'rich', L: 127,
+          r: "Malta. It's a citizenship-by-investment thing. Don't ask.", p: "Never left the county. The county is fine.", m: "Passport expired in 2019. TSA PreCheck though!" },
+        { s: "Boat requires a crew", a: 'rich', L: 115,
+          r: "It's a yacht, and the captain's name is Captain.", p: "A canoe with a mystery hole.", m: "A jet ski, financed, used twice, insured always." },
+        { s: "Has a panic room", a: 'rich', L: 104,
+          r: "Steel doors, air filtration, a small Rothko.", p: "The panic is ambient and room-wide.", m: "The garage, when the in-laws visit." },
+        { s: "Home gym nicer than a real gym", a: 'rich', L: 95,
+          r: "Mirrored studio, trainer at 6am, eucalyptus towels.", p: "Cinder blocks on a broom handle. Undefeated.", m: "A treadmill that's now a $1,400 coat rack." },
+
+        // ---- POOR ONLY 🥫 ----
+        { s: "Sells plasma twice a week", a: 'poor', L: 231,
+          r: "The blood is 'blue' and stays in the body.", p: "Tuesdays and Fridays. It's basically a gig. Juice box after.", m: "Donates annually at the office drive for the free t-shirt." },
+        { s: "Rims worth more than the car", a: 'poor', L: 204,
+          r: "The car costs more than a house, rims came with it.", p: "$3,000 spinners on a $900 Cutlass. Priorities: immaculate.", m: "Factory alloys, and terrified of curbs." },
+        { s: "Pays a fee to cash their own paycheck", a: 'poor', L: 178,
+          r: "Doesn't have paychecks. Has 'liquidity events.'", p: "Check-cashing place takes 3% and knows his birthday.", m: "Direct deposit and a smug feeling about it." },
+        { s: "The space heater IS the heating", a: 'poor', L: 159,
+          r: "Heated floors, heated driveway, heated opinions.", p: "One glowing box, moved room to room like a campfire.", m: "A Nest thermostat locked at 68 by a spouse with admin rights." },
+        { s: "Rents the furniture", a: 'poor', L: 143,
+          r: "The furniture is older than the country. Inherited, obviously.", p: "Rent-A-Center sofa, $29 a week for the rest of recorded time.", m: "IKEA, assembled with tears, owned outright." },
+        { s: "Knows the bus schedule by heart", a: 'poor', L: 131,
+          r: "Believes buses are a rumor.", p: "The 42 comes at :10 and :40, and Reggie drives on weekdays.", m: "Drove past a bus once. Locked the doors." },
+        { s: "Couch on the front porch", a: 'poor', L: 118,
+          r: "'Outdoor furniture' that costs more than indoor furniture.", p: "The living room simply expanded. Great couch, ask anyone.", m: "A porch swing from Wayfair, bolted in by a professional." },
+        { s: "Gas tank never above a quarter", a: 'poor', L: 106,
+          r: "Never seen the gauge. Franco handles fuel.", p: "$10 at a time. The light is a suggestion.", m: "Fills up at half a tank 'to be safe.' Tracks it in an app." },
+        { s: "Condiments are all packets", a: 'poor', L: 97,
+          r: "The chef makes aioli from scratch. Ketchup is banned.", p: "A drawer of ketchup, soy sauce, and taco sauce. A pantry, really.", m: "A fridge door of 14 half-used bottles, three expired." },
+        { s: "On a first-name basis at the pawn shop", a: 'poor', L: 88,
+          r: "First-name basis at Sotheby's.", p: "Big Mike holds the TV till the 1st, no paperwork.", m: "Sold a lamp on Facebook Marketplace once. Got scammed." },
+
+        // ---- MIDDLE CLASS ONLY 📊 (the punchline) ----
+        { s: "Mows the lawn every Saturday at 9am", a: 'mid', L: 342,
+          r: "Has never touched a mower. Might not know what grass is.", p: "The lawn is dirt, a kiddie pool, and freedom.", m: "Stripes. Edging. A rivalry with Dale next door. This is his life now." },
+        { s: "Has a Costco membership AND a garage fridge", a: 'mid', L: 301,
+          r: "Someone shops. Food appears. Magic.", p: "A membership to WHERE? For bulk WHAT?", m: "48 rolls of paper towels and a second fridge just for Gatorade. Living the dream." },
+        { s: "Asks about the 401(k) match", a: 'mid', L: 276,
+          r: "IS the 401(k). His name is on the fund.", p: "The what? Matched with what?", m: "'It's free money!' he whispers, vesting over four years." },
+        { s: "Commutes 45 minutes each way", a: 'mid', L: 248,
+          r: "Commutes from the bedroom to the study, complains about it.", p: "Work is wherever the truck is parked.", m: "90 minutes a day of podcasts about how to stop commuting." },
+        { s: "Extended warranty on everything", a: 'mid', L: 215,
+          r: "Breaks it, buys a new one, forgets the old one existed.", p: "The warranty is a cousin named Hector who's 'good with electronics.'", m: "Has never once successfully claimed one. Buys them anyway." },
+        { s: "Argues about the thermostat", a: 'mid', L: 189,
+          r: "Every room is its own climate zone. The wine has its own.", p: "The thermostat is a window, open or closed.", m: "68 in winter, 74 in summer, divorce court in between." },
+        { s: "Meal-preps chicken and rice on Sunday", a: 'mid', L: 164,
+          r: "The chef 'does a little something' — wait, we covered this.", p: "Meal prep is knowing which gas station has roller dogs 2-for-1.", m: "Ten identical Tupperwares. Joy: not included." },
+        { s: "Books the flight with two layovers to save $60", a: 'mid', L: 147,
+          r: "The jet leaves when he's done with brunch.", p: "Not flying anywhere. Cousin's wedding is drivable if you believe.", m: "11 hours via Denver AND Charlotte. Victory." },
+        { s: "Owns a stud finder and two ladders", a: 'mid', L: 133,
+          r: "Has 'a guy' for walls. Has a guy for the guy.", p: "Knocks on the wall. Sounds fine. Hangs it anyway.", m: "The garage is 60% tools for projects scheduled for 'someday.'" },
+        { s: "Sets an alarm for 6:15am", a: 'mid', L: 121,
+          r: "Wakes up when the body says so. The body says 10:30.", p: "Wakes up when the rooster says so. (See: chickens.)", m: "6:15. 6:24. 6:33. Hates himself by 6:42. Repeats forever." },
+
+        // ---- EXPANSION PACK: BOTH 🤝 ----
+        { s: "On a first-name basis with a bartender", a: 'both', L: 640,
+          r: "Walks into the club — 'the usual, Mr. Whitmore.'", p: "Walks into the dive — 'the usual, Denny.'", m: "Shows his ID at Applebee's and orders one Blue Moon." },
+        { s: "Wears sunglasses indoors", a: 'both', L: 355,
+          r: "Might be famous. Might just be rich enough not to care.", p: "Rough night. No further questions.", m: "Takes them off immediately and apologizes to the room." },
+        { s: "Skips jury duty", a: 'both', L: 590,
+          r: "His lawyer sent a letter. He's 'essential to operations.'", p: "The summons went to an address from three moves ago.", m: "Serves the full two weeks. Brings a book. Gets picked foreman." },
+        { s: "Has legendary Vegas stories", a: 'both', L: 505,
+          r: "Comped villa, a host named Sergio, lost six figures happily.", p: "Banned from one casino, briefly married at another.", m: "Budgeted $200 for slots, lost it by 9pm, walked the Strip sadly." },
+        { s: "Has 'a guy' for everything", a: 'both', L: 720,
+          r: "A guy for wine, a guy for art, a guy for finding guys.", p: "One cousin who can fix literally anything for a case of beer.", m: "Gets three quotes from licensed, bonded, insured strangers." },
+        { s: "Never RSVPs", a: 'both', L: 310,
+          r: "Shows up if he feels like it. Everyone's thrilled anyway.", p: "Shows up regardless. Might bring people.", m: "RSVPs within the hour, asks what to bring, brings it." },
+        { s: "Has an unusual pet", a: 'both', L: 465,
+          r: "Peacocks. They came with the estate. They scream at dawn.", p: "A raccoon that started coming around and never stopped.", m: "A goldendoodle named Bailey with its own Instagram." },
+        { s: "Doesn't carry keys", a: 'both', L: 380,
+          r: "Doors open. That's what staff and keypads are for.", p: "The lock's been broken since March. Nothing to take anyway.", m: "A carabiner with 14 keys, three of them a mystery." },
+        { s: "Ignores parking tickets", a: 'both', L: 335,
+          r: "Valet's problem. Tickets are just parking fees with extra steps.", p: "Glovebox full of them. Car's registered to an ex anyway.", m: "Pays online within the hour, screenshots the confirmation." },
+        { s: "Has no idea what day it is", a: 'both', L: 425,
+          r: "Days are for employees. The assistant knows the schedule.", p: "Every day is Saturday when you're between opportunities.", m: "Color-coded shared Google Calendar. Knows EXACTLY what day it is." },
+        { s: "Wears the same outfit every day", a: 'both', L: 450,
+          r: "A 'uniform.' Twelve identical gray t-shirts, $200 each.", p: "It's the outfit. It works. Mind your business.", m: "A Monday-through-Friday business casual rotation, ironed Sunday." },
+        { s: "Never does the dishes", a: 'both', L: 400,
+          r: "There are people for that, and a second dishwasher.", p: "Paper plates are a lifestyle, not a compromise.", m: "Loads the dishwasher, then re-loads it 'correctly.' Nightly fight." },
+        { s: "Lets the phone ring", a: 'both', L: 370,
+          r: "If it matters, they'll call the office.", p: "Unknown number? That's a collector. Everyone knows the rule.", m: "Answers by ring two. It's Spectrum retention. Again." },
+        { s: "Never makes appointments", a: 'both', L: 290,
+          r: "People come to him. The dentist makes house calls.", p: "Walk-in clinic. First come, first served. He's got time.", m: "Books three weeks out, arrives 15 minutes early, confirms twice." },
+        { s: "Lives off the land", a: 'both', L: 510,
+          r: "The estate garden supplies the chef. It's called 'farm to table.'", p: "An actual garden and an actual freezer full of venison.", m: "Two dead basil plants from Trader Joe's on the windowsill." },
+        { s: "Makes their own alcohol", a: 'both', L: 345,
+          r: "Owns a vineyard. The wine has his face on it.", p: "Garage operation. Strong. Possibly legal. Definitely effective.", m: "One homebrew kit, used once, now storing Halloween decorations." },
+        { s: "Has a sauna routine", a: 'both', L: 415,
+          r: "Cedar barrel sauna, cold plunge, a 'wellness protocol.'", p: "A parked car in July with the windows up.", m: "The gym sauna, 10-minute limit, towel rule strictly observed." },
+        { s: "Kids don't go to the local school", a: 'both', L: 305,
+          r: "Boarding school in Connecticut. They visit for holidays.", p: "'Alternative schooling.' The details are fuzzy.", m: "Bought the whole house specifically for the school district." },
+        { s: "Takes the same vacation every year", a: 'both', L: 330,
+          r: "'We always take the villa in August.' It's tradition.", p: "The cousin's lake trailer. Also tradition. Also great.", m: "Disney. Planned 14 months out with a countdown app and a binder." },
+        { s: "Travels with an entourage", a: 'both', L: 360,
+          r: "Assistant, trainer, and a guy whose job remains unclear.", p: "Four cousins. Always. No event is exempt.", m: "Alone in a Camry, alone in a cubicle, alone at Panera." },
+        { s: "Never eats leftovers", a: 'both', L: 385,
+          r: "The chef cooks fresh. Yesterday's food is a stranger's problem.", p: "There ARE no leftovers. The plate gets finished.", m: "A fridge of labeled Tupperware playing expiration-date roulette." },
+        { s: "Never locks the front door", a: 'both', L: 395,
+          r: "The gate is locked. The guardhouse is staffed. The door is fine.", p: "The lock is broken and the dog is not.", m: "Checks it twice, then checks the app from bed." },
+        { s: "Owns ATVs", a: 'both', L: 340,
+          r: "'Ranch toys.' A fleet of Polarises for the back forty.", p: "Three four-wheelers. One runs. All beloved.", m: "Rode one once on vacation. Helmet, waiver, guided tour." },
+        { s: "Doesn't buy new clothes", a: 'both', L: 280,
+          r: "Vintage archival pieces. The tailor keeps everything alive.", p: "The thrift store hits different when you know the drop days.", m: "An Old Navy haul every season, 40% off, still feels guilty." },
+        { s: "Wears camo regularly", a: 'both', L: 320,
+          r: "$900 technical hunting gear for the lodge weekend.", p: "It's just clothes. Works at the store, works at church.", m: "One camo cap from a bachelor party in 2019." },
+        { s: "Hunts their own food", a: 'both', L: 430,
+          r: "Guided elk hunts. The taxidermy bill is a mortgage payment.", p: "Deer season fills the freezer. That's just math.", m: "Catch-and-release once a year. Buys chicken on the way home." },
+        { s: "Has a tab somewhere", a: 'both', L: 375,
+          r: "The club bills monthly. Numbers are never discussed.", p: "The corner store runs him a tab. Miss Rosa keeps it in a notebook.", m: "'Can we split this four ways?' Venmo requests sent from the parking lot." },
+        { s: "Owns land they don't use", a: 'both', L: 300,
+          r: "'It's a land bank.' Four hundred acres of appreciating nothing.", p: "Inherited scrubland three states away that nobody can sell.", m: "0.18 acres, fully mortgaged, every inch mowed." },
+        { s: "Has a nickname everyone uses", a: 'both', L: 445,
+          r: "Old money runs on nicknames. A 60-year-old man named 'Bunny.'", p: "Everyone calls him Peanut. Nobody remembers why. Not even Peanut.", m: "Dave. His nickname is Dave. His name is David." },
+        { s: "Doesn't diet", a: 'both', L: 315,
+          r: "The chef handles macros. Wellness is outsourced.", p: "Eats what's there when it's there. The metabolism of necessity.", m: "MyFitnessPal streak: day 4. Again. It's always day 4." },
+        { s: "Finances are a total mystery", a: 'both', L: 490,
+          r: "Trusts, LLCs, shell companies. Even his accountant guesses.", p: "Cash economy, no paper trail, somehow always exactly enough.", m: "W-2 fully visible to the IRS, HR, and anyone who asks." },
+        { s: "Drinks out of weird vessels", a: 'both', L: 410,
+          r: "Orange juice in inherited crystal. Water in Baccarat.", p: "Iced tea in a pickle jar. It's the perfect size. It IS.", m: "A $45 Stanley with a name sticker and a straw-cleaning brush." },
+        { s: "Broke a bone doing something dumb", a: 'both', L: 435,
+          r: "Skiing in Gstaad. Or 'skiing' in Gstaad — après counts.", p: "Roof, ladder, beer. Pick any two, get the same result.", m: "Pickleball. It's always pickleball." },
+        { s: "Never assembles furniture", a: 'both', L: 295,
+          r: "White-glove delivery. The box never enters the house.", p: "Curb furniture arrives pre-assembled. That's the whole appeal.", m: "Three hours, one Allen wrench, one leftover screw, one strained marriage." },
+        { s: "Takes fireworks seriously", a: 'both', L: 470,
+          r: "Hires a licensed pyrotechnics crew for the lake party.", p: "Drives to the state line for the stuff with warnings in two languages.", m: "Sparklers, a bucket of water, safety glasses. Done by 9." },
+        { s: "Prefers home remedies to doctors", a: 'both', L: 350,
+          r: "A 'healer,' IV vitamin drips, and a $400 supplement regimen.", p: "Whiskey, duct tape, and walking it off. Grandma's protocols.", m: "WebMD spiral at midnight, urgent care by noon." },
+        { s: "Owns multiple properties", a: 'both', L: 365,
+          r: "Aspen, Palm Beach, and a 'little place' in Cabo.", p: "Technically grandma's house is in his name. Technically.", m: "One. 30-year fixed. The bank owns most of it, but the lawn is his." },
+        { s: "Doesn't own a printer", a: 'both', L: 420,
+          r: "The office prints. The assistant prints. Paper appears.", p: "The library prints for a dime and the librarian is lovely.", m: "Owns a printer. It's out of cyan. It's always out of cyan." },
+        { s: "Never returns anything", a: 'both', L: 325,
+          r: "Keeps it or gifts it to the housekeeper. Returns are friction.", p: "No receipt, final sale, and the flea market doesn't do refunds.", m: "A return pile in the trunk entering its sixth week of residency." },
+        { s: "Has memorable tan lines", a: 'both', L: 285,
+          r: "Goggle tan from Aspen, deck tan from the boat.", p: "A farmer's tan you could navigate by.", m: "SPF 50, wide-brim hat, zero tan, annual dermatologist visit." },
+        { s: "Driver's license situation is complicated", a: 'both', L: 355,
+          r: "Expired two years ago. Doesn't matter — Franco drives.", p: "Suspended, but the car doesn't know that.", m: "Real ID renewed by mail six months early." },
+        { s: "Tips in extremes", a: 'both', L: 390,
+          r: "Hundreds for remembering his name, or nothing on principle.", p: "Generous when flush, honest when not, always says thank you.", m: "Exactly 18%, calculated on the pre-tax subtotal, every time." },
+        { s: "Christmas lights stay up all year", a: 'both', L: 480,
+          r: "'Permanent architectural lighting.' There's an app and a subscription.", p: "They've been up since 2019. They work. What's the problem?", m: "Up December 1st, down January 2nd. Coiled. Labeled. Bins." },
+        { s: "Owns a tractor", a: 'both', L: 335,
+          r: "A Kubota for the 'hobby ranch.' It has Bluetooth.", p: "A rusted Ford 8N older than his father. Starts every time.", m: "A riding mower he calls 'the tractor.' It is not a tractor." },
+        { s: "Buys the big fight", a: 'both', L: 405,
+          r: "Ringside. You can see him on the broadcast, looking bored.", p: "Someone's got a stream. Everyone's watching at Ray's.", m: "$79.99 split six ways over Venmo, buffering at the worst moment." },
+        { s: "Eats from trucks", a: 'both', L: 300,
+          r: "Hired the taco truck for a party. The WHOLE truck.", p: "The taco truck knows his order. That's real wealth, honestly.", m: "Waits 25 minutes for a $17 fusion burrito at a 'food truck festival.'" },
+        { s: "Dog is completely untrained", a: 'both', L: 447,
+          r: "It's 'spirited.' It has a behaviorist and a calming playlist.", p: "The dog does what it wants. The dog has earned this.", m: "Eight-week obedience course. Graduated. Certificate on the fridge." },
+        { s: "Oil changes are not a thing", a: 'both', L: 312,
+          r: "Cars get serviced somewhere, by someone. Presumably.", p: "Oil gets topped off, never changed. The engine has adapted.", m: "Windshield sticker, 3,000 miles, dealership coffee, right on time." },
+        { s: "Has a signature drink", a: 'both', L: 372,
+          r: "A negroni appears when he sits down. Words are unnecessary.", p: "Whichever tallboy is on sale. The loyalty is to the price.", m: "The seasonal Starbucks item, ordered by its full government name." },
+        { s: "Kids' birthday parties are events", a: 'both', L: 428,
+          r: "Petting zoo, professional photographer, a mysterious ice sculpture.", p: "The whole block shows up. Someone brings a horse. Nobody planned the horse.", m: "Trampoline park, Package B, 90 minutes, pizza is extra." },
+        { s: "Wedding was unconventional", a: 'both', L: 392,
+          r: "Bought out an island. Guests were flown in. NDAs were signed.", p: "Courthouse Tuesday, backyard hog roast Saturday. Perfect weekend.", m: "150 guests, chicken or fish, a DJ named DJ Dave, over by 10." },
+        { s: "Always carries a knife", a: 'both', L: 362,
+          r: "A $500 titanium EDC he's never once opened outdoors.", p: "Obviously. How else do you open, fix, and eat things?", m: "Had one. TSA has it now." },
+        { s: "Gets haircuts at home", a: 'both', L: 342,
+          r: "The barber comes Tuesdays. Cash, tip, gossip.", p: "Cousin with clippers on the porch. Free, fast, occasionally even.", m: "Supercuts, 4:30 Tuesday, coupon, 'just a trim.'" },
+        { s: "TV setup is extreme", a: 'both', L: 417,
+          r: "A projector hidden in the ceiling. The TV pretends to be art.", p: "An 85-inch, financed, magnificent, in a room too small to see all of it.", m: "A 55-inch from a Black Friday stampede in 2021. Still proud." },
+        { s: "Doesn't answer emails", a: 'both', L: 382,
+          r: "The assistant answers. He 'doesn't do email.'", p: "What email? That address died with a forgotten Hotmail password.", m: "Inbox zero by 9am or the anxiety wins." },
+        { s: "Gets clothes tailored", a: 'both', L: 292,
+          r: "Everything bespoke. The tailor knows his posture, mood, and secrets.", p: "Grandma hems everything free with a tomato pincushion.", m: "Off the rack. The sleeves are too long. They will always be too long." },
+
+        // ---- EXPANSION PACK: RICH ONLY 🎩 ----
+        { s: "Uses 'winter' as a verb", a: 'rich', L: 150,
+          r: "'We winter in Palm Beach.' Seasons are destinations.", p: "Winters wherever the space heater is pointed.", m: "Winters in the same house, thermostat at 68, arguing." },
+        { s: "Has a family office", a: 'rich', L: 128,
+          r: "An entire firm whose only client is the family money.", p: "The family office is grandma's kitchen table on the 1st.", m: "A guy at Edward Jones named Craig who sends birthday cards." },
+        { s: "Flies somewhere for lunch", a: 'rich', L: 142,
+          r: "'It's only 40 minutes by plane.' For a sandwich.", p: "Walks somewhere for lunch. Also 40 minutes. Also worth it.", m: "Eats a desk salad while browsing flight deals he won't book." },
+        { s: "Has a house manager", a: 'rich', L: 110,
+          r: "Someone runs the house like a boutique hotel.", p: "He IS the house manager. The super stopped answering in June.", m: "A chore wheel on the fridge that everyone ignores." },
+        { s: "Doesn't know how many bathrooms they have", a: 'rich', L: 175,
+          r: "'Nine? Eleven? There's one in the pool house — does that count?'", p: "One. The count is one. Everyone is acutely aware of the count.", m: "Two and a half. The half is for guests. Please use the guest one." },
+        { s: "The cars have their own building", a: 'rich', L: 133,
+          r: "A climate-controlled 'car barn' with a lift and a lounge.", p: "Cars live wherever they stopped running.", m: "A two-car garage holding zero cars and 400 storage bins." },
+        { s: "Has a ski locker in a resort town", a: 'rich', L: 96,
+          r: "Deer Valley locker, skis pre-tuned, visited twice a year.", p: "Has never seen snow he didn't have to shovel or drive through.", m: "Rents skis in the parking lot. The boots are always slightly wrong." },
+        { s: "Belongs to multiple golf clubs", a: 'rich', L: 121,
+          r: "Memberships on two coasts, 'for convenience.'", p: "Found a full set of clubs at a yard sale. Sold them. Smart.", m: "Municipal course, 6am tee time, beer smuggled in a cooler sleeve." },
+        { s: "Buys tables at charity galas", a: 'rich', L: 104,
+          r: "$25,000 a table to eat chicken for a cause he can't name.", p: "Is occasionally the cause.", m: "Donates $25 when the checkout screen asks, and feels it." },
+        { s: "The kids have trust funds", a: 'rich', L: 138,
+          r: "Vesting at 25, 30, and 35, 'so they stay motivated.'", p: "The inheritance is a toolbox and a reputation.", m: "A 529 plan fed $50 a month like a parking meter." },
+        { s: "Bought the neighbor's house for privacy", a: 'rich', L: 168,
+          r: "Made an offer they couldn't refuse, then demolished the house.", p: "The neighbor's house is 11 feet away and hosts a rooster.", m: "A privacy fence, permitted, at exactly the legal height limit." },
+        { s: "The boat has a boat", a: 'rich', L: 187,
+          r: "The tender ferries guests to the yacht. It costs more than a house.", p: "The canoe has a bucket. For bailing. The bucket is essential gear.", m: "The kayak has a roof rack, and the roof rack has a story." },
+        { s: "Household staff sign NDAs", a: 'rich', L: 99,
+          r: "The housekeeper legally cannot describe the pantry.", p: "Everyone in the building knows everything. It's the building's newspaper.", m: "Asks the babysitter not to post the kids on Instagram." },
+        { s: "The kitchen has two dishwashers", a: 'rich', L: 115,
+          r: "Two dishwashers, a butler's pantry, and a separate 'catering kitchen.'", p: "The dishwasher is a drying rack and always has been.", m: "One dishwasher and a nightly debate about pre-rinsing." },
+        { s: "The closet has an island", a: 'rich', L: 125,
+          r: "A closet island with jewelry drawers and museum lighting.", p: "The closet is a rod, a curtain, and optimism.", m: "A closet 'system' from The Container Store, installed over one hard weekend." },
+        { s: "Has a publicist", a: 'rich', L: 88,
+          r: "Employs someone to manage what strangers think of him.", p: "His publicist is his aunt on Facebook. Unpaid. Devastatingly effective.", m: "His LinkedIn headline says 'Results-Driven Professional.'" },
+        { s: "Has a private banker", a: 'rich', L: 107,
+          r: "A banker who answers on the first ring and asks about the kids.", p: "The bank is a shoebox and a cousin who owes him.", m: "A 1-800 number, an hour of hold music, and a survey after." },
+        { s: "Donates to a college right before their kid applies", a: 'rich', L: 158,
+          r: "A gift to the 'capital campaign,' coincidentally timed.", p: "The kid gets in on grades or doesn't go. Simple system.", m: "Refinances the house to pay full sticker-price tuition." },
+        { s: "Owns a piece of a sports team", a: 'rich', L: 146,
+          r: "A 'minority stake.' Sits in the owner's box and says 'we.'", p: "Owns a jersey. Also says 'we.' Equally emotionally invested.", m: "Season tickets in the 300 level, split with three coworkers." },
+        { s: "Has a screening room", a: 'rich', L: 118,
+          r: "Velvet recliners, a popcorn machine, movies still in theaters.", p: "The 85-inch IS the screening room, and everyone's invited.", m: "A 'media room' that's a couch, a soundbar, and blackout curtains." },
+        { s: "Hires a closet organization team", a: 'rich', L: 92,
+          r: "Three women in matching aprons alphabetized his sweaters.", p: "Organization is one closet rod and gravity.", m: "Watched the Netflix show, bought 30 bins, quit halfway." },
+        { s: "Fresh flowers, replaced weekly", a: 'rich', L: 101,
+          r: "A florist delivers arrangements that nobody acknowledges.", p: "The yard grows what it grows. Some of it is flowers.", m: "A $12 grocery bouquet when guests are coming." },
+        { s: "Takes adult gap years", a: 'rich', L: 112,
+          r: "'I'm taking a sabbatical to reset.' From what, unclear.", p: "Has been on sabbatical since the plant closed. Nobody calls it that.", m: "Took one personal day and answered email the whole time." },
+        { s: "Has a helipad", a: 'rich', L: 130,
+          r: "The 'H' on the lawn settles every traffic argument forever.", p: "Has a spot where a helicopter landed once. Medical. Long story.", m: "Watches the traffic helicopter's report from inside the traffic." },
+        { s: "Apologizes with jewelry", a: 'rich', L: 85,
+          r: "A velvet box appears after every forgotten anniversary.", p: "Apologizes with breakfast, and actually means it.", m: "Apologizes with a Kay Jewelers payment plan." },
+        { s: "Names kids with Roman numerals", a: 'rich', L: 136,
+          r: "Winthrop Chase Buckley IV, known to everyone as 'Trip.'", p: "Junior. Big Junior and Little Junior. The system works.", m: "Checked the Social Security top-10 list and picked #4." },
+        { s: "Owns an island", a: 'rich', L: 172,
+          r: "A 'small' one. Only reachable by the boat's boat.", p: "There's a river island he's claimed since boyhood. Spiritually his.", m: "The kitchen island. Granite. The realtor made a big deal of it." },
+        { s: "Has 'people'", a: 'rich', L: 155,
+          r: "'I'll have my people reach out.' The people are plural and salaried.", p: "His people are cousins, and they WILL show up.", m: "His people are a group chat that needs four days to plan one dinner." },
+        { s: "The driveway is heated", a: 'rich', L: 109,
+          r: "Snow melts on contact. The driveway is warmer than most apartments.", p: "The driveway is gravel, mud, and the memory of gravel.", m: "A snowblower, a back brace, and a 6am obligation." },
+        { s: "The dog is in the will", a: 'rich', L: 143,
+          r: "The trust provides for the dog's 'lifestyle continuity.'", p: "The dog inherits the porch, and everyone knows it.", m: "The dog inherits the leftover kibble and 4,000 photos." },
+        { s: "Never touches luggage", a: 'rich', L: 95,
+          r: "Bags vanish at the curb and reappear unpacked in the closet.", p: "Everything fits in one duffel, and the duffel stays within reach.", m: "Personal item, carry-on, and a bag-fee comparison spreadsheet." },
+        { s: "Calls a 6,000-square-foot house 'the cottage'", a: 'rich', L: 126,
+          r: "'Just a little cottage on the lake.' It has an elevator.", p: "Calls a cottage-sized house 'the house,' because that's what it is.", m: "Calls a 1,700-square-foot colonial 'not much, but it's ours.'" },
+        { s: "Has season tickets they never use", a: 'rich', L: 90,
+          r: "The seats 'go to clients.' The clients are also never there.", p: "Has never paid for a ticket. Knows the guy at the gate.", m: "Uses every single game he paid for. Leaves in the 7th to beat traffic." },
+        { s: "Sits on three boards", a: 'rich', L: 102,
+          r: "'Advisory roles.' Four meetings a year, real influence, zero labor.", p: "Sits on the porch board. Meetings daily. Attendance perfect.", m: "Sits on the HOA board. It has consumed his entire personality." },
+        { s: "The kids row crew", a: 'rich', L: 87,
+          r: "Regattas, a boathouse, and a $2,000 oar.", p: "The kids can actually row. The lake taught them for free.", m: "The kids play rec soccer. The orange slices are on a snack rotation." },
+        { s: "The house has a signature scent", a: 'rich', L: 98,
+          r: "A scent system pipes 'white tea and cedar' through the HVAC.", p: "The house smells like whatever's cooking, which is the best smell.", m: "A Yankee Candle in every room, lit only for company." },
+
+        // ---- EXPANSION PACK: POOR ONLY 🥫 ----
+        { s: "Phone screen is a spiderweb", a: 'poor', L: 145,
+          r: "Cracks a screen, a new phone appears within the hour.", p: "Reads through the cracks like stained glass. The thumb's toughened up.", m: "Screen protector, OtterBox, insurance plan. The phone is immortal." },
+        { s: "Car ceiling is held up with thumbtacks", a: 'poor', L: 162,
+          r: "Wouldn't know what a headliner is. The car is new.", p: "A constellation of pushpins keeping the ceiling fabric at bay.", m: "Detailed twice a year. The headliner is pristine and beige." },
+        { s: "One headlight is duct-taped", a: 'poor', L: 138,
+          r: "The dealer collects the car when a warning light blinks.", p: "Amber tape over the cracked one. Passed inspection. Somehow.", m: "Replaces both bulbs at once 'because they age together.'" },
+        { s: "The TV gets six channels", a: 'poor', L: 120,
+          r: "Every streaming service, a login for none — the assistant has them.", p: "The antenna pulls six channels and four of them are preachers.", m: "Pays for five streaming services. Watches The Office." },
+        { s: "The WiFi is the neighbor's", a: 'poor', L: 155,
+          r: "Enterprise-grade mesh network with a guest network for the staff.", p: "'Netgear_2Ghz,' one bar, courtesy of Darlene next door, bless her.", m: "Renames his own network 'FBI Surveillance Van' and giggles." },
+        { s: "The AC is a box fan and a bag of ice", a: 'poor', L: 149,
+          r: "Every room is 71 degrees and nobody knows where the vents are.", p: "Fan points at the ice. Physics does the rest. It slaps.", m: "Central air, serviced every spring, filter subscription active." },
+        { s: "The gym membership is for the showers", a: 'poor', L: 131,
+          r: "The gym is in the house. The showers are also in the house.", p: "$10 a month at Planet Fitness equals unlimited hot water. Genius.", m: "$45 a month. Went in January. Still 'means to get back into it.'" },
+        { s: "Layaway expert", a: 'poor', L: 108,
+          r: "Buys it now. All of it. Whatever it is.", p: "Christmas gets engineered in July, $20 at a time, like a professional.", m: "Klarna at checkout. Four payments. Mild shame." },
+        { s: "Does all shopping at the dollar store", a: 'poor', L: 126,
+          r: "Has never seen the inside of one. Suspects they're a myth.", p: "Dollar General is the grocery, pharmacy, and hardware store. Efficient.", m: "Target run for 'a few things.' $187." },
+        { s: "Buys cigarettes one at a time", a: 'poor', L: 98,
+          r: "Cigars from a humidor. A guy in Tampa rolls them.", p: "A loosie from the counter jar, exact change ready.", m: "Quit in 2018 and mentions it quarterly." },
+        { s: "Knows which gas station has free air", a: 'poor', L: 112,
+          r: "Tires are someone's job. Not his. Someone's.", p: "The Shell on 5th. Free air, working pump, decent hot dogs.", m: "A tire inflator from Amazon lives in the trunk. Used twice." },
+        { s: "The donut spare has been on for a year", a: 'poor', L: 141,
+          r: "Flat tire? The car goes away and a different car comes back.", p: "The donut IS the tire now. It has earned full status.", m: "AAA card, roadside plan, checks tread with a penny quarterly." },
+        { s: "Jumper cables live on the passenger seat", a: 'poor', L: 119,
+          r: "A dead battery is a Franco problem.", p: "Not the trunk — the SEAT. Time matters at 7am.", m: "A jump box, cables, flares, and a safety vest in a labeled bin." },
+        { s: "The library card is the streaming service", a: 'poor', L: 134,
+          r: "Owns a screening room and, somehow, a studio's back catalog.", p: "DVDs, audiobooks, free WiFi, and AC. The library is undefeated.", m: "Four streaming services, plus a library card for the kids' summer program." },
+        { s: "The check engine light is decorative", a: 'poor', L: 152,
+          r: "A warning light means the car gets replaced.", p: "It's been on since the Obama administration. Car runs fine.", m: "Dealership within 48 hours, loaner car, full diagnostic, gladly." },
+        { s: "Waters down the shampoo to get the last bit", a: 'poor', L: 105,
+          r: "Products appear in the shower, full, always. A staff mystery.", p: "Every bottle gets the water treatment. Nothing dies unfinished.", m: "Buys the family-size pump before the old one is done." },
+        { s: "The front yard is a permanent yard sale", a: 'poor', L: 116,
+          r: "An estate sale happens exactly once, and it makes the news.", p: "The table's out every weekend. Inventory rotates. Prices negotiable.", m: "One garage sale a decade, priced with stickers, ends in a donation run." },
+        { s: "The power bill is in an ex's name", a: 'poor', L: 123,
+          r: "Bills go to the family office. He's never seen one.", p: "The electric is under Tammy, and Tammy is not to be contacted.", m: "Autopay, paperless billing, categorized monthly by a budget app." },
+        { s: "Insurance card is expired but laminated", a: 'poor', L: 100,
+          r: "An umbrella policy covers things he doesn't know he owns.", p: "The lamination adds authority. Officers respect effort.", m: "Current card in the glovebox, digital copy in the app, an agent named Barb." },
+        { s: "Keeps a bacon grease jar", a: 'poor', L: 128,
+          r: "The chef deglazes with duck fat that costs more than the steak.", p: "The jar by the stove is seasoning, inheritance, and religion.", m: "Pours it into a can, throws the can away, feels vaguely wasteful." },
+        { s: "Shoe Goo is a household staple", a: 'poor', L: 94,
+          r: "Shoes get resoled in Italy or retired to charity.", p: "One tube has fixed boots, sneakers, and once a bumper.", m: "Buys new sneakers when the old ones 'look tired.'" },
+        { s: "Bought half a cow off a truck", a: 'poor', L: 110,
+          r: "Owns the ranch the cow came from. It's 'regenerative.'", p: "A guy had a deal. The freezer's full. Ask nothing.", m: "Splits a quarter cow from a farm share and posts about it." },
+        { s: "Plastic sheeting on the windows in winter", a: 'poor', L: 121,
+          r: "The windows are triple-glazed and Swiss.", p: "The hair-dryer-and-plastic kit drops the bill $40 a month. Science.", m: "New windows, financed at the home show. 'They pay for themselves.'" },
+        { s: "Climbs in through the passenger side", a: 'poor', L: 135,
+          r: "Doors are opened for him. All doors. Everywhere.", p: "Driver's door hasn't opened since the incident. The slide-across is muscle memory.", m: "All doors work, autolock at 15 mph, fob battery replaced proactively." },
+        { s: "The screen door has no screen", a: 'poor', L: 103,
+          r: "The 'screened porch' is a glass conservatory with a fireplace.", p: "It still slams like a screen door. That's the important part.", m: "Retractable screen installed by a guy from Angi. $600." },
+        { s: "Shower schedule revolves around the water heater", a: 'poor', L: 114,
+          r: "Endless hot water, two boilers, and a steam room. Obviously.", p: "Four people, 40 gallons. First up wins. Last one learns character.", m: "Tankless heater installed after ONE cold shower. Financed." },
+        { s: "Heats the house with the oven", a: 'poor', L: 107,
+          r: "The house heats itself, by app, from the plane.", p: "Oven at 350 with the door open. January's central heating.", m: "A programmable thermostat and a strictly enforced cardigan rule." },
+        { s: "Paid Friday, broke by Monday", a: 'poor', L: 130,
+          r: "Money arrives quarterly, in amounts that don't fit in a weekend.", p: "The weekend gets lived FULLY. Monday is future-him's problem.", m: "Direct deposit auto-splits into five accounts named after goals." },
+        { s: "Everything is Great Value brand", a: 'poor', L: 117,
+          r: "Doesn't know brands. Food arrives plated, not packaged.", p: "Great Value is a lifestyle, and honestly the ketchup's identical.", m: "Name brands, but only on sale, tracked in a coupon app." },
+        { s: "The car stereo is a Bluetooth speaker on the dash", a: 'poor', L: 125,
+          r: "A 22-speaker Burmester system used exclusively for talk radio.", p: "A JBL wedged in the cupholder. Concert quality. Kind of.", m: "CarPlay, a podcast queue, volume at a respectful 14." },
+
+        // ---- EXPANSION PACK: MIDDLE CLASS ONLY 📊 ----
+        { s: "Runs the neighborhood Facebook group", a: 'mid', L: 210,
+          r: "Doesn't know his neighbors. That's the whole point of the hedge.", p: "IS the neighborhood news, in person, live and unfiltered.", m: "Posts 'suspicious vehicle?' about a lost DoorDasher weekly." },
+        { s: "Runs for the HOA board", a: 'mid', L: 195,
+          r: "His lawyer talks to HOAs. He has never met one.", p: "No HOA. A man can own a rooster and paint his door purple.", m: "Won a seat on a fence-height platform. Serves with terrifying zeal." },
+        { s: "Complains about gas prices from inside an SUV", a: 'mid', L: 178,
+          r: "Has no idea what gas costs. Would guess wrong by whole dollars.", p: "Knows the price at every station in a 5-mile radius, to the cent.", m: "$92 fill-up on the Tahoe, posts a photo of the pump screen." },
+        { s: "Watches the Amazon truck on the map", a: 'mid', L: 188,
+          r: "Things arrive. Someone signs. The map is for the staff.", p: "Packages go to his sister's. Porch pirates cleaned him out twice.", m: "'8 stops away.' Refreshes. '7 stops away.' Refreshes." },
+        { s: "Has three weather apps", a: 'mid', L: 156,
+          r: "The pilot checks the weather. That's what the pilot is for.", p: "Looks outside. The sky's going to do what it does either way.", m: "Radar, hourly, and a European model he swears is more accurate." },
+        { s: "Says 'we have food at home'", a: 'mid', L: 201,
+          r: "There IS food at home. A chef made it. It beats the restaurant.", p: "The drive-thru wasn't happening anyway. That's a payday treat.", m: "Says it, means it, then eats a sad slice of deli turkey standing up." },
+        { s: "Books flights entirely on points", a: 'mid', L: 148,
+          r: "Doesn't collect points. Points are for people who count things.", p: "Doesn't fly. The car makes it or the trip doesn't happen.", m: "27 browser tabs, transfer bonuses, a hobby called 'churning.' Saved $214." },
+        { s: "Joined a pickleball league", a: 'mid', L: 173,
+          r: "Built a private court, hired a coach, has played twice ever.", p: "Plays handball against the liquor store wall. Free. Elite.", m: "Division 3.5 doubles, a $180 paddle, and a rivalry with Gary." },
+        { s: "The cooler cost $400", a: 'mid', L: 152,
+          r: "Coolers arrive stocked. He has never carried one in his life.", p: "A styrofoam cooler and bagged ice do the same job for $9.", m: "The Yeti holds ice for six days and he WILL tell you about it." },
+        { s: "Meal kit boxes stacking up by the door", a: 'mid', L: 140,
+          r: "A chef shops daily. Boxes are for other people.", p: "Cooks real meals from real groceries. Cheaper and better.", m: "Three skipped HelloFresh weeks, still subscribed, cardboard skyline." },
+        { s: "On Baby Step 4 and will tell you about it", a: 'mid', L: 133,
+          r: "Dave Ramsey would be on HIS baby steps.", p: "The envelope system is just called 'cash' when it's all you've got.", m: "Debt snowball spreadsheet and a beans-and-rice sermon at every barbecue." },
+        { s: "The kids play travel sports", a: 'mid', L: 167,
+          r: "The kid trains with a former Olympian. The team flies.", p: "The kid plays in the street and is somehow the best one in the county.", m: "$8,000 a year, every weekend in a Hampton Inn, a fleet of bumper magnets." },
+        { s: "Matching pajamas for the Christmas card", a: 'mid', L: 145,
+          r: "The card is shot by a photographer at the Aspen house in October.", p: "The Christmas photo happens whenever everyone's coincidentally home.", m: "Buffalo plaid for six humans and a dog, tripod, 40 takes." },
+        { s: "The good towels are for guests", a: 'mid', L: 129,
+          r: "Every towel is the good towel. Heated racks. Egyptian cotton.", p: "Towels are towels. The soft one goes to whoever calls it first.", m: "Two strictly enforced towel tiers. Touch the embroidered ones and see." },
+        { s: "Leaves detailed Google reviews", a: 'mid', L: 137,
+          r: "Doesn't review places. Places hope HE reviews them. He declines.", p: "Reviews out loud, in the parking lot, to whoever's around.", m: "4 stars: 'Service prompt, booth sticky.' Local Guide badge, 847 reviews." },
+        { s: "Has a retirement countdown app", a: 'mid', L: 124,
+          r: "Retired at 40, un-retired at 42 out of boredom, calls it 'building.'", p: "Retirement is a rumor. The knees will make the final decision.", m: "9,347 days. Checks it after every meeting that could've been an email." },
+        { s: "'My child is an honor student' bumper sticker", a: 'mid', L: 118,
+          r: "The school named a building after the family. No sticker required.", p: "The kid's smart and everyone at the cookout already knows it.", m: "Two stickers, one per kid, positioned symmetrically on the Odyssey." },
+        { s: "Fantasy football commissioner", a: 'mid', L: 142,
+          r: "Owns actual football players. Well, a percentage of them.", p: "Wins the bar pool at Ray's constantly. Cash only.", m: "Runs a 12-team PPR league with a constitution. Wins $80, spends $400." },
+        { s: "Knows the Home Depot layout by heart", a: 'mid', L: 131,
+          r: "Has never been. Contractors exist precisely so he never has to.", p: "Knows the returns desk and the clearance rack. Different expertise.", m: "Aisle 14 for PVC. Goes twice every Saturday. Forgets the thing both times." },
+        { s: "Manages Elf on the Shelf logistics", a: 'mid', L: 126,
+          r: "The house manager does the elf. The elf has a costume budget.", p: "The elf is wherever the kid last left it, and the magic survives.", m: "A 10pm phone reminder, a midnight panic, a staged flour crime scene." },
+        { s: "Stick-figure family on the minivan", a: 'mid', L: 122,
+          r: "The family is on a museum donor wall, not a windshield.", p: "The family is IN the van. All of them. Waving.", m: "Five figures, a dog, and a cat — updated when the guinea pig died." },
+        { s: "Lugs water softener salt bags", a: 'mid', L: 111,
+          r: "The water is soft. Someone makes it soft. The details are boring.", p: "The water is whatever the pipes say it is. Builds character.", m: "Two 40-pound bags a month, a back twinge, a calendar reminder." },
+        { s: "Survived a timeshare presentation", a: 'mid', L: 138,
+          r: "Owns the resort. The presentations happen in his lobby.", p: "Nobody's offering him a free weekend to hear about Orlando. He's checked.", m: "90 minutes for free park tickets. Almost bought. ALMOST. Still shaken." },
+        { s: "Checks their own Zestimate weekly", a: 'mid', L: 134,
+          r: "Knows the value to the dollar. The broker calls when it moves.", p: "The Zestimate on grandma's house is an insult and he'd say so.", m: "Up $4,000 this month. Screenshot. Group chat. Equity feelings." },
+        { s: "Wears the company quarter-zip on weekends", a: 'mid', L: 108,
+          r: "Wears the company on paper, never on fleece.", p: "A free shirt is a free shirt. The plumbing logo means nothing to him.", m: "The Synergy Dynamics fleece at the farmers market, the gym, and church." },
+        { s: "Sunday dread starts at 4pm", a: 'mid', L: 149,
+          r: "Sunday flows into Monday. Both are optional.", p: "Sunday's the best day. Cookout, game, nobody's boss calls.", m: "4pm: stomach drop. 6pm: lunch prep. 9pm: 'I should sleep.' 1am: awake." },
+        { s: "Rotates seasonal doormats", a: 'mid', L: 115,
+          r: "The entry has an 'arrangement,' redone monthly by a service.", p: "The doormat says WELCOME and has said it since the Clinton years.", m: "Twelve mats in the garage. 'Hello Fall!' deploys September 1st, sharp." },
+        { s: "Power washes the driveway for fun", a: 'mid', L: 127,
+          r: "A crew does the exterior quarterly. He's never held the wand.", p: "The hose has one setting and the driveway is gravel anyway.", m: "Owns the 3,200 PSI unit. Saturday satisfaction. Lines visible from space." },
+        { s: "Unlimited car wash membership", a: 'mid', L: 119,
+          r: "The cars are detailed at home. The detailer has a key.", p: "Rain and the gas station squeegee keep it street legal.", m: "$24.99 a month, goes 2.3 times, has personally calculated the break-even." },
+
+        // ---- EXPANSION PACK 2: BOTH 🤝 ----
+        { s: "Roasts a whole pig for parties", a: 'both', L: 455,
+          r: "A whole-hog caterer at the ranch party. There's a carving station.", p: "A caja china in the driveway and an uncle who 'knows pig.'", m: "Burgers on a Weber, flipped once, internal temp verified twice." },
+        { s: "Falls off the grid for weeks", a: 'both', L: 505,
+          r: "'He's at the ranch. Unreachable.' Everyone just accepts this.", p: "The phone got shut off. He'll resurface on someone's porch.", m: "Answers Slack from the beach with 'sorry, spotty wifi!' (It's fine.)" },
+        { s: "House is full of taxidermy", a: 'both', L: 340,
+          r: "Safari trophies with paperwork. The kudu has a room.", p: "Deer mounts from good years. Each one has a story and a name.", m: "None. He asked once. The answer was no." },
+        { s: "Has a legendary fruit tree", a: 'both', L: 380,
+          r: "An orchard. The gardener juices things. There's a honey program.", p: "Grandma's lemon tree feeds the entire block, free, forever.", m: "An HOA-approved ornamental pear. Produces nothing. On purpose." },
+        { s: "Doesn't carry ID", a: 'both', L: 310,
+          r: "Everyone who matters already knows exactly who he is.", p: "Lost it. Replacing it costs $40 and a day at the DMV, so... later.", m: "Wallet organized, ID behind the little window, where it lives." },
+        { s: "Feeds strangers constantly", a: 'both', L: 425,
+          r: "Dinner parties for twenty. Half the guests are new. The chef copes.", p: "The cookout is open to the block. Plates get made for people who didn't come.", m: "'We should have people over!' — said quarterly, done never." },
+        { s: "Has an outdoor kitchen", a: 'both', L: 365,
+          r: "A built-in grill island with a wine fridge and a pizza dome.", p: "A turkey fryer, a propane burner, and a folding table. Feeds forty.", m: "A grill cover, a Pinterest board, and a quote he's 'sitting on.'" },
+        { s: "Kids don't have bedtimes", a: 'both', L: 395,
+          r: "A 'child-led sleep philosophy.' The nanny implements it.", p: "Kids fall asleep when they fall asleep, where they fall asleep.", m: "7:30 bath, 8:00 book, 8:15 lights, white noise at 40%." },
+        { s: "Talks on speakerphone in public", a: 'both', L: 470,
+          r: "Closes a deal over lunch at full volume. The restaurant endures.", p: "Whole conversation on speaker, phone held flat like a slice of pizza.", m: "Earbuds in, whispering 'sorry — I'm on a call' to everyone he passes." },
+        { s: "The fridge is basically empty", a: 'both', L: 350,
+          r: "Champagne, condiments, and a single chef-labeled container.", p: "It's the 28th. The fridge knows what month it is.", m: "Packed shelf to shelf with meal prep and expiring produce guilt." },
+        { s: "Wears gold jewelry daily", a: 'both', L: 335,
+          r: "Understated heirloom Cartier that never comes off.", p: "Every chain at once. Also never comes off. Same energy.", m: "A wedding band and a Fitbit." },
+        { s: "Skips every line", a: 'both', L: 405,
+          r: "His name is at the door. The door opens itself.", p: "Went to high school with the bouncer. Walks in mid-conversation.", m: "OpenTable at 5:45, arrives 6:40 for a 7:00, waits beautifully." },
+        { s: "Heats with a wood fire", a: 'both', L: 320,
+          r: "A reclaimed limestone hearth. The firewood is delivered stacked.", p: "The wood stove IS the furnace. Two cords split by hand out back.", m: "A gas fireplace operated by a light switch, used every Christmas." },
+        { s: "Doesn't buy gifts", a: 'both', L: 300,
+          r: "The assistant handles gifting. There is a spreadsheet and a budget line.", p: "Regifts or makes something, and honestly it's the better present.", m: "Amazon wishlist compliance officer. Ships it to you directly. Gift receipt." },
+        { s: "Sleeps outside sometimes", a: 'both', L: 285,
+          r: "A screened sleeping porch. 'Glamping' on the property. Linen involved.", p: "The porch couch in July. Best sleep of the year.", m: "Bought a tent in 2019. It's been up once. In the living room." },
+        { s: "Coffee is never from Starbucks", a: 'both', L: 375,
+          r: "A $14,000 espresso setup, or a person who operates one.", p: "Instant at home, free refill at the gas station he's loyal to.", m: "A $7 oat-milk latte daily, budgeted under 'small joys.'" },
+        { s: "Still has a landline", a: 'both', L: 330,
+          r: "A 'house line.' Staff answer it. It has its own voice.", p: "Grandma's landline is the family's one reliable number since 1988.", m: "Cancelled it in 2011 and still brags about the $30 a month." },
+        { s: "Never pays retail", a: 'both', L: 440,
+          r: "Wholesale, comps, 'friend pricing' — negotiating is a sport.", p: "Clearance, flea markets, and the art of the open-box deal.", m: "Pays sticker, adds the protection plan, tips 18% on it emotionally." },
+        { s: "Has a standing card game", a: 'both', L: 415,
+          r: "Monthly poker. Real stakes, real cigars, one senator.", p: "Dominoes on the porch, quarters on the table, trash talk for free.", m: "'Game night' with Catan, a Google invite, and a snack signup sheet." },
+        { s: "The kids work in the family business", a: 'both', L: 355,
+          r: "'VP of Business Development' at 24. Reports to no one. Attends nothing.", p: "The kid's been working the register since age 12 and runs the place by 19.", m: "The kid does chores for an allowance, tracked in a parenting app." },
+        { s: "Lends money casually", a: 'both', L: 390,
+          r: "'Pay me whenever.' Forgets by Tuesday. It was a rounding error.", p: "Hands a cousin his last $40, no questions, knows it comes back around.", m: "Creates a Splitwise entry for $11.50 and sends a gentle reminder." },
+        { s: "Has been in an adult altercation", a: 'both', L: 430,
+          r: "'A disagreement at the club.' Settled quietly. Memberships survived.", p: "Yes, and they're best friends now. It came up at the wedding toast.", m: "Never. Drafted a strongly worded email, slept on it, softened it." },
+        { s: "Doesn't buy bottled water", a: 'both', L: 295,
+          r: "A whole-house filtration system and glass bottles that get refilled.", p: "Tap. It's fine. It's always been fine. What's wrong with you.", m: "A Costco pallet of Kirkland water in the garage, restocked monthly." },
+        { s: "Gets mail somewhere else", a: 'both', L: 280,
+          r: "Everything goes to the office. Privacy is a service you buy.", p: "Mail goes to mom's. It's safer there and always has been.", m: "A curbside mailbox, checked daily at 5:15, flag etiquette observed." },
+        { s: "Keeps cash hidden in the house", a: 'both', L: 460,
+          r: "A safe behind the art. A real one. With tiers.", p: "The coffee can, the Bible, and a mattress with a secret.", m: "An 'emergency $60' in the kitchen drawer that the whole family knows about." },
+        { s: "Owns a serious generator", a: 'both', L: 345,
+          r: "A whole-house Generac that self-tests every Wednesday at noon.", p: "A pull-start beast and extension cords running through windows.", m: "A flashlight drawer, a candle stash, and a prayer." },
+        { s: "Not on LinkedIn", a: 'both', L: 420,
+          r: "Doesn't need to network. He IS the network.", p: "What would it even say. The work finds him by word of mouth.", m: "Posts 'Humbled to announce...' and refreshes the likes hourly." },
+        { s: "Has a cast-iron skillet with lore", a: 'both', L: 370,
+          r: "Inherited French copper and a chef who maintains 'the collection.'", p: "Grandma's Lodge — never soaped, seasoned like a relic, wills exist for it.", m: "Washed his with soap once, was informed of his crime, watched 11 videos." },
+
+        // ---- EXPANSION PACK 2: RICH ONLY 🎩 ----
+        { s: "Everything is monogrammed", a: 'rich', L: 140,
+          r: "Towels, luggage, cuffs, the dog's raincoat. Initials everywhere.", p: "Same concept, executed in Sharpie, at no cost.", m: "One monogrammed Pottery Barn stocking per family member." },
+        { s: "The pool has a pool house", a: 'rich', L: 122,
+          r: "A full guest cottage nobody's slept in since 2019.", p: "The pool is above-ground and the 'pool house' is the actual house.", m: "The pool is a membership at the Y with lane-lap time slots." },
+        { s: "The kids' résumés include 'philanthropy'", a: 'rich', L: 98,
+          r: "A 'family foundation internship' at age 15.", p: "The kid actually helps people constantly. No one writes it down.", m: "The kid logged 40 volunteer hours for the graduation cord." },
+        { s: "Owns art he's never seen", a: 'rich', L: 112,
+          r: "It's 'in storage.' The storage is in Geneva. It's an asset class.", p: "Every possession is visible from the couch.", m: "The art is framed vacation photos from Shutterfly, and he loves them." },
+        { s: "Owns a Steinway nobody plays", a: 'rich', L: 128,
+          r: "It's tuned twice a year for silence. The decorator insisted.", p: "The keyboard from the pawn shop gets played every single night.", m: "The kids' upright hosts framed photos and a guilt trip." },
+        { s: "The garage has a turntable", a: 'rich', L: 105,
+          r: "Cars rotate on a platter so no one has to reverse.", p: "Reversing is free.", m: "A tennis ball on a string marks the exact stopping point." },
+        { s: "The house has a service entrance", a: 'rich', L: 95,
+          r: "Deliveries, staff, and caterers flow through a door guests never see.", p: "There's one door and it sticks. Everyone knows the shoulder trick.", m: "The 'service entrance' is the garage keypad the kids share with friends." },
+        { s: "Loafers, no socks, in December", a: 'rich', L: 118,
+          r: "Ankles out in a snowstorm. Cold is for people who wait outside.", p: "Socks are worn with slides, in July, correctly.", m: "Weather-appropriate footwear from a duck-boot brand, waterproofed twice." },
+        { s: "An assistant manages the Christmas cards", a: 'rich', L: 88,
+          r: "Four hundred cards, signed by machine, mailed by someone salaried.", p: "Christmas wishes are delivered in person, loudly, with a plate.", m: "A December 1st kitchen-table assembly line with address-label tears." },
+        { s: "The kids' preschool had a waitlist and donors", a: 'rich', L: 102,
+          r: "Applied at conception. Interviewed twice. Wore blazers.", p: "Preschool was grandma's living room and it produced better people.", m: "Toured six daycares and cried at the monthly price of all of them." },
+        { s: "His dentist is his tenant", a: 'rich', L: 108,
+          r: "Owns the building. Gets his cleaning and his rent check the same day.", p: "The dentist is whoever the clinic assigns and it's a different one every time.", m: "In-network, twice a year, flosses aggressively the week before." },
+        { s: "The other house gets 'opened' before arrival", a: 'rich', L: 115,
+          r: "Staff fly ahead. Fridges fill themselves. Beds air out.", p: "Arrival prep is a key from under the frog and hoping the pilot light held.", m: "Arrival prep is a 40-minute Airbnb check-in instruction scroll." },
+        { s: "Hired a falconer", a: 'rich', L: 145,
+          r: "Pigeons on the terrace? A man with a hawk now visits Tuesdays.", p: "The pigeons have names and get fed on purpose.", m: "Bought a plastic owl. The pigeons sit on the owl." },
+        { s: "The Christmas tree is professionally decorated", a: 'rich', L: 110,
+          r: "Flocked, themed, and done in a day by a crew with a van.", p: "The tree is decorated by everyone, with ornaments made by anyone.", m: "The tree is themed too — the theme is '25 years of mismatched memories.'" },
+        { s: "The backyard has a putting green", a: 'rich', L: 100,
+          r: "Regulation turf, three holes, a bunker 'for realism.'", p: "The backyard has a tire, a dog, and better parties.", m: "A putting mat in the office hallway, used during conference calls." },
+        { s: "Summer camp costs more than college", a: 'rich', L: 96,
+          r: "Sailing in Maine, eight weeks, a waitlist with a donor track.", p: "Summer camp is the neighborhood, sunup to streetlights, free.", m: "YMCA day camp, booked in February, paid in three installments." },
+        { s: "The basement is a med spa", a: 'rich', L: 92,
+          r: "Cold plunge, red light room, hyperbaric chamber, a 'longevity guy.'", p: "The basement has a weight bench from 1983 that built real strength.", m: "The basement has a treadmill facing a TV that gets used in January." },
+        { s: "Buys out the restaurant", a: 'rich', L: 124,
+          r: "'We'll take all of it' — the room, the staff, the night.", p: "Gets the same privacy at the counter seat where everyone knows him.", m: "Books the 'semi-private room' for 12 with a $500 minimum and sweats it." },
+        { s: "The gate has a gate", a: 'rich', L: 131,
+          r: "Outer gate, inner gate, and a guard who waves or doesn't.", p: "The gate is a chain with a padlock and a beware sign. Effective.", m: "A baby gate at the stairs and a dog gate at the kitchen. Also effective." },
+        { s: "Kid's first car came with a bow", a: 'rich', L: 137,
+          r: "A G-Wagon at 16, filmed for the internet, crashed by 17.", p: "Kid's first car is the family car, inherited mid-oil-change at 19.", m: "A used Civic with a lecture, a curfew, and a gas-money ledger." },
+
+        // ---- EXPANSION PACK 2: POOR ONLY 🥫 ----
+        { s: "Electronics respond to percussion", a: 'poor', L: 135,
+          r: "Nothing gets hit. Things get replaced before they blink.", p: "The remote, the TV, and the window unit all require a specific smack.", m: "Unplugs it for 10 seconds like the manual says, and it works." },
+        { s: "The kitchen chairs don't match", a: 'poor', L: 118,
+          r: "The chairs match because a designer chose them as a 'set.'", p: "Four chairs, four eras, zero matches, infinite seating.", m: "A dining set from the outlet, 'the floor model,' 15% off." },
+        { s: "The toaster only does one side", a: 'poor', L: 126,
+          r: "The chef makes toast under a broiler. The toaster is a myth.", p: "You flip the bread halfway. Everyone knows. It's not a problem.", m: "A four-slot Cuisinart with a bagel mode used exactly once." },
+        { s: "The car windows are manual and one is stuck", a: 'poor', L: 130,
+          r: "The windows are controlled from the back seat, by someone else.", p: "The crank pops off and gets passed around like a talking stick.", m: "Auto-up, auto-down, pinch protection, serviced under warranty." },
+        { s: "Knows the McDonald's ice cream machine schedule", a: 'poor', L: 142,
+          r: "Ice cream comes from a place with one word for a name.", p: "The machine on 5th works after 9pm. The one on Main lies.", m: "Checks the broken-machine tracker app, drives to the working one." },
+        { s: "The dryer is a clothesline", a: 'poor', L: 112,
+          r: "Laundry leaves the house and returns folded. Machines are rumors.", p: "The dryer broke in 2021. The sun works free and smells better.", m: "A steam dryer with a sanitize cycle and a lint-trap ritual." },
+        { s: "Performs bread surgery", a: 'poor', L: 108,
+          r: "Bread arrives daily from a bakery. Yesterday's loaf feeds the ducks.", p: "Cut the mold off, keep it moving. Penicillin is basically medicine.", m: "Checks the date, sniffs it, throws it out anyway, feels bad." },
+        { s: "Fried bologna is a delicacy", a: 'poor', L: 138,
+          r: "Mortadella flown in from Bologna, sliced to translucence.", p: "Edges cut so it doesn't dome. Crispy. Perfect. A childhood in a pan.", m: "Turkey on wheat, every day, joylessly, for the macros." },
+        { s: "Owns exactly one good outfit", a: 'poor', L: 121,
+          r: "Owns forty good outfits and a person who steams them.", p: "THE outfit. Weddings, funerals, court. It has seen everything.", m: "A 'nice section' of the closet, rotated to hide the wear." },
+        { s: "Pays the light bill in person", a: 'poor', L: 116,
+          r: "Has never seen a bill. Bills are an abstraction handled elsewhere.", p: "In person, in cash, gets a receipt, KEEPS the receipt.", m: "Autopay with a calendar reminder to confirm the autopay ran." },
+        { s: "The car alarm is a Club", a: 'poor', L: 104,
+          r: "The car alarm is a man named Franco and a camera system.", p: "A steering-wheel Club from 1994, deployed nightly with a clunk.", m: "Factory alarm, a dash cam, and an AirTag in the seat pocket." },
+        { s: "Wire hangers are infrastructure", a: 'poor', L: 111,
+          r: "Wooden hangers only. The closet has a humidity policy.", p: "Antenna, muffler bracket, car lock, toilet handle — the hanger provides.", m: "Bought a 50-pack of velvet hangers after a TikTok. Life changed." },
+        { s: "Owns a police scanner", a: 'poor', L: 125,
+          r: "His security team files a written summary if anything happens.", p: "The scanner is the neighborhood's true-crime podcast, live, nightly.", m: "The Citizen app sends him alerts from 11 miles away and he reads all of them." },
+        { s: "The wardrobe is free promotional t-shirts", a: 'poor', L: 107,
+          r: "Wears $300 shirts that advertise nothing because THAT's the flex.", p: "Radio station tees, bank giveaways, a 5K he didn't run. All fabric is free fabric.", m: "Race shirts he DID run, worn only for yardwork, guilt-sorted." },
+        { s: "The dog eats table scraps exclusively", a: 'poor', L: 119,
+          r: "The dog has a raw-diet meal plan and a standing vet dermatologist.", p: "The dog has never seen dog food and its coat looks fantastic.", m: "Grain-free kibble, measured with a scoop, treats logged in an app." },
+        { s: "Can rank 14 ramen flavors with confidence", a: 'poor', L: 114,
+          r: "Had $40 tonkotsu in Tokyo once and mentions it when ramen comes up.", p: "Chili-lime shrimp is elite, chicken is mid, and he will defend this.", m: "Adds an egg and calls it 'elevated.' Posts it." },
+        { s: "Kool-Aid is the house wine", a: 'poor', L: 109,
+          r: "The house wine is from the house vineyard. It has a label.", p: "Red is a flavor. The pitcher never empties. Sugar levels are generational.", m: "La Croix in nine flavors and a SodaStream that's out of gas." },
+        { s: "The toilet flushes by hand", a: 'poor', L: 102,
+          r: "The toilets are Japanese and do things he's stopped questioning.", p: "Tank lid's off, reach in, pull the chain. Guests get a tutorial.", m: "Jiggles the handle, watches one YouTube video, replaces the flapper, triumphant." },
+
+        // ---- EXPANSION PACK 2: MIDDLE CLASS ONLY 📊 ----
+        { s: "Costco food court date night", a: 'mid', L: 185,
+          r: "Date night has a tasting menu and a sommelier.", p: "Date night is a porch, a radio, and it's genuinely romantic.", m: "Two hot dogs and a churro: $4.50. He calls it 'the best deal in America.'" },
+        { s: "Garage gym from Facebook Marketplace", a: 'mid', L: 158,
+          r: "The trainer brings equipment. The equipment leaves with the trainer.", p: "Cinder blocks and a pull-up bar in a doorframe. Results: real.", m: "Mismatched plates, a squat rack from a guy named Kyle, a whiteboard PR list." },
+        { s: "Tracks their credit score like a Tamagotchi", a: 'mid', L: 172,
+          r: "Doesn't know his score. Banks apologize to HIM.", p: "Knows it's bad, knows exactly why, has made peace.", m: "Credit Karma push alerts ON. A 4-point dip ruins the weekend." },
+        { s: "Owns a label maker", a: 'mid', L: 149,
+          r: "The staff labels things. He has never seen the labels.", p: "Labels are memory and Sharpie on masking tape.", m: "The label maker has a label that says LABEL MAKER." },
+        { s: "Has mulch opinions", a: 'mid', L: 156,
+          r: "The landscape architect chose 'the mulch story.' He signed off blind.", p: "The yard's aesthetic is 'whatever grows wins.'", m: "Black vs. brown is a spring flashpoint. Moved 40 bags personally. Photographed." },
+        { s: "Floor mats protect the floor mats", a: 'mid', L: 161,
+          r: "The car interior is someone else's responsibility entirely.", p: "The floor is visible through the floor in one spot. Adds character.", m: "WeatherTech liners OVER the originals. The originals are 'for resale.'" },
+        { s: "Refuses valet", a: 'mid', L: 144,
+          r: "Doesn't park. Ever. The car circles or the car waits.", p: "Parks wherever the truck fits and walks in like he owns the block.", m: "Parks a half mile away. 'It's good to walk.' Checks on the car once." },
+        { s: "The Blackstone became his personality", a: 'mid', L: 178,
+          r: "A chef does hibachi at the house when the mood strikes.", p: "The flat-top is a cast-iron pan and the results are identical.", m: "Smash burgers, a scraper collection, and a griddle Facebook group. He's gone." },
+        { s: "The good scissors", a: 'mid', L: 153,
+          r: "Every pair is the good pair. Nobody has ever searched for scissors.", p: "One pair, communal, currently in whichever room used them last.", m: "Fabric scissors are SACRED. Household incidents have occurred. There's a hiding spot." },
+        { s: "Downloads AND prints the boarding pass", a: 'mid', L: 147,
+          r: "Doesn't hold documents. A person with a folder does.", p: "It's a road trip. The boarding pass is a full tank.", m: "Phone wallet, email PDF, and a paper copy. Belt, suspenders, terminal C." },
+        { s: "Owns 40 reusable grocery bags", a: 'mid', L: 166,
+          r: "Groceries arrive. Bags are not his concern. Never have been.", p: "The good plastic bags live under the sink and get reused until translucent.", m: "All 40 are in the trunk. He is in the checkout line with none of them." },
+        { s: "Fears identity theft like a cryptid", a: 'mid', L: 139,
+          r: "A firm monitors the family's exposure. It sends quarterly PDFs.", p: "Identity theft would be a lateral move at worst. Good luck to them.", m: "A crosscut shredder, credit freezes at all three bureaus, VPN evangelism." },
+        { s: "Changes smoke detector batteries on daylight savings", a: 'mid', L: 134,
+          r: "A property manager handles 'life safety systems.' There's a contract.", p: "The detector chirped for two years and became part of the house's song.", m: "Twice yearly, whole house, ladder out, as the internet instructed." },
+        { s: "The Roomba has a name and a schedule", a: 'mid', L: 151,
+          r: "The house is cleaned by people. Invisible, punctual people.", p: "The broom has no name and an unbeatable price.", m: "Dusty runs Tuesdays and Fridays, and the house gets cleaned FOR the Roomba first." },
+        { s: "Fixed the dryer via YouTube and tells everyone", a: 'mid', L: 169,
+          r: "Appliances are replaced at the first noise. Sometimes before.", p: "Fixes everything himself because that was always the only option.", m: "Saved $180 on a heating element. The saga has been retold at four dinners." },
+        { s: "Fierce navigation app loyalty", a: 'mid', L: 137,
+          r: "The driver knows the way. That's the entire point of the driver.", p: "Directions are landmarks: 'left at the old Kmart, past where the fire was.'", m: "Adds six minutes to 'avoid the light.' Defends Waze like a family member." },
+        { s: "Buys the school fundraiser wrapping paper", a: 'mid', L: 142,
+          r: "Writes the school a check that ends the fundraiser conversation.", p: "Wraps gifts in the Sunday comics and it looks better anyway.", m: "$40 of guilt-paper yearly. Owns a dedicated wrapping-paper tote." },
+
+        // ---- EXPANSION PACK 3: BOTH 🤝 ----
+        { s: "Drives a car brand that no longer exists", a: 'both', L: 520,
+          r: "A Duesenberg. It has a curator and an insurance rider.", p: "A '74 AMC Matador. It has a personality and a smell.", m: "A RAV4. It has a payment." },
+        { s: "Will tell you exactly what they made last week", a: 'both', L: 495,
+          r: "Announces the deal at dinner. Numbers are a love language.", p: "Side job plus plasma plus the flip: $340. Tells everyone, proudly.", m: "Salary is classified. HR said so. The shame is complimentary." },
+        { s: "Spends Wednesday afternoon with coffee and the paper", a: 'both', L: 430,
+          r: "Club veranda, espresso, the Journal, zero appointments.", p: "Porch, gas station coffee, yesterday's paper. Same exact peace.", m: "Skims headlines at a red light and calls it 'staying informed.'" },
+        { s: "Hosts holidays for thirty people", a: 'both', L: 400,
+          r: "Caterers, rented linens, and a kids' table with its own waiter.", p: "Folding tables to the horizon, everyone brings a dish, it's perfect.", m: "Hosts eight, stresses for three weeks, buys a turkey sized for forty." },
+        { s: "Doesn't work in January", a: 'both', L: 380,
+          r: "St. Barts. 'Everyone's gone anyway.'", p: "Seasonal work means seasonal rest. The system works.", m: "Back on the 2nd, 9am meeting, asked 'how was your break' eleven times." },
+        { s: "Buys meat from a butcher, not a store", a: 'both', L: 340,
+          r: "The butcher texts him when the good stuff lands.", p: "The carniceria counter guy is basically family at this point.", m: "Styrofoam tray, shrink wrap, 'family pack,' freezer half." },
+        { s: "Has an intimidating grandmother", a: 'both', L: 460,
+          r: "The matriarch controls the trust. Everyone behaves at dinner.", p: "Grandma raised half the block and can still silence a room.", m: "Grandma lives in Boca and sends $25 checks with newspaper clippings." },
+        { s: "Their word is the contract", a: 'both', L: 410,
+          r: "Handshake deals for millions. The lawyers 'paper it later.'", p: "A handshake and a beer. Iron-clad. Enforced by reputation.", m: "DocuSign, three signatures, a witness, 'initial here and here.'" },
+        { s: "Owns a chainsaw and uses it", a: 'both', L: 355,
+          r: "Clears 'the back parcel' recreationally with a $1,400 Stihl.", p: "Storm work, firewood, favors. The saw earns its keep.", m: "An electric one, for one branch a year, in full PPE." },
+        { s: "Falls asleep anywhere", a: 'both', L: 390,
+          r: "Jet, box seats, board meetings. Power napping is a power move.", p: "Any couch, any porch, mid-sentence. Earned rest.", m: "Can't sleep without the fan app, the weighted blanket, and melatonin." },
+        { s: "Has a home bar with regulars", a: 'both', L: 425,
+          r: "A paneled bar room. Friends stop by. There's a good pour.", p: "The garage IS a bar — neon signs, stools, house rules, regulars.", m: "A Pinterest bar cart where the bottles are decor." },
+        { s: "Has a wall of family photos", a: 'both', L: 335,
+          r: "Oil portraits. Actual oil portraits. One has a plaque.", p: "Every graduation, every baby, floor to ceiling down the hallway.", m: "One gallery wall from a tutorial, frames from Michaels, level used." },
+        { s: "Owns cowboy boots that get worn", a: 'both', L: 320,
+          r: "Custom Luccheses for the ranch he visits quarterly.", p: "One pair, resoled twice, worn to work and weddings alike.", m: "Bought at a rodeo-themed bachelor party. Worn once. Displayed." },
+        { s: "The kids swim in questionable water", a: 'both', L: 350,
+          r: "The lake-house lake. Private, tested, still has snakes.", p: "The creek, the quarry, the open hydrant. Summer is summer.", m: "Chlorinated community pool, swim diapers enforced, adult-swim whistle." },
+        { s: "Gives directions using landmarks", a: 'both', L: 365,
+          r: "'Past the vineyard, through the second gate, Franco will wave.'", p: "'Past where the Dairy Queen used to be, left at the tractor.'", m: "Drops a pin. Texts the pin. Confirms receipt of the pin." },
+        { s: "Doesn't know their own phone number", a: 'both', L: 310,
+          r: "People call his people. The number is a staff detail.", p: "The number changes with whichever prepaid deal is running.", m: "Knows it cold, plus his childhood landline, forever." },
+        { s: "Has a room dedicated to one hobby", a: 'both', L: 375,
+          r: "The gun room. The wine room. The model train room. Rooms abound.", p: "The garage is 100% fishing gear. The car has never once fit.", m: "The 'office' is 6% office, 94% Peloton and regret." },
+        { s: "Lets the kids drive early", a: 'both', L: 385,
+          r: "Golf carts at 8, the ranch truck at 12, 'private property, officer.'", p: "The field truck at 11, gramps supervising from the tailgate.", m: "Learner's permit at 15½ to the minute, hands at 9 and 3." },
+        { s: "Their house has a nickname", a: 'both', L: 345,
+          r: "'The Compound.' Everyone calls it that. Even the county.", p: "'The Spot.' Everyone knows the Spot. Directions end at the Spot.", m: "'Our forever home' — the Zillow tab is still open (see: Zestimate)." },
+        { s: "Throws parties that end at sunrise", a: 'both', L: 440,
+          r: "The band leaves at 4am. The cleanup crew arrives at 6.", p: "The porch light's still on and somebody's frying eggs.", m: "Ends at 10:15. The neighbors' Ring cameras noted everything." },
+        { s: "Has an old truck they won't sell", a: 'both', L: 415,
+          r: "Grandpa's F-100, restored to six figures, driven never.", p: "Grandpa's F-100, original everything, driven daily.", m: "Sold grandpa's truck to fund a minivan. Still grieving quietly." },
+        { s: "Doesn't buy greeting cards", a: 'both', L: 290,
+          r: "The assistant sends engraved notes. Warmth, outsourced.", p: "Says it in person, with a plate of food. Better than Hallmark.", m: "Twenty minutes in the card aisle for a $7.99 'funny' one." },
+        { s: "The kitchen has a restaurant appliance", a: 'both', L: 330,
+          r: "A La Cornue range under a hood like a jet intake.", p: "A deep fryer from a diner that closed. It works. Gloriously.", m: "An air fryer, and strong feelings about the air fryer." },
+        { s: "Buys rounds for the whole bar", a: 'both', L: 405,
+          r: "'Everyone drinks on me.' Never sees the bill. Legend status.", p: "Payday generosity is a sacred tradition. Everybody eats.", m: "Buys one round for four people and mentions it twice." },
+        { s: "Has a chair nobody else may sit in", a: 'both', L: 360,
+          r: "The study chair. Leather, inherited, off-limits, lightly feared.", p: "Dad's recliner. Sacred ground. Guests learn exactly once.", m: "An ergonomic Herman Miller he somehow justified with FSA money." },
+        { s: "Vacations without the kids", a: 'both', L: 325,
+          r: "Adults go to Italy. Kids go to camp (see: camp).", p: "Kids stay with grandma. Grandma insists. Grandma wins.", m: "Never. The trip IS for the kids. It's Disney. There's a binder." },
+        { s: "Keeps bees", a: 'both', L: 300,
+          r: "Estate hives. The honey has a label and a waitlist.", p: "A wild hive in the wall they've negotiated a lasting peace with.", m: "Read about it, priced the suits, HOA said no (see: chickens)." },
+        { s: "Feeds a crowd from one pot", a: 'both', L: 315,
+          r: "The paella guy arrives with a pan the size of a kiddie pool.", p: "The stockpot of gumbo feeds whoever shows up. It always has.", m: "A Crockpot of chili labeled 'mild,' with a laminated topping guide." },
+        { s: "Watches the sunrise regularly", a: 'both', L: 285,
+          r: "From the east deck, with the espresso, on purpose.", p: "Shift work and porch mornings. The sunrise is the commute.", m: "Only from a middle seat on a 6am flight to a conference." },
+        { s: "Recently sold something at a profit", a: 'both', L: 295,
+          r: "A building. He'd forgotten he owned it.", p: "A Marketplace find, flipped same week, doubled his money.", m: "Has lost money on every sale he's ever made and keeps the receipts." },
+
+        // ---- EXPANSION PACK 3: RICH ONLY 🎩 ----
+        { s: "Has no idea what milk costs", a: 'rich', L: 165,
+          r: "'Ten dollars? Is milk ten dollars?'", p: "$3.79 at Dollar General, $4.29 at the corner store. Knows both.", m: "Knows it to the cent and files a weekly complaint about it." },
+        { s: "Owns a tuxedo", a: 'rich', L: 120,
+          r: "Two. One lives in the travel wardrobe.", p: "The one good outfit covers weddings AND court (see: outfit).", m: "Rents from Men's Wearhouse, returns it Monday by 5pm sharp." },
+        { s: "Has a favorite auction house", a: 'rich', L: 98,
+          r: "'Christie's for art, Bonhams for the cars.'", p: "The storage-unit auction is also an auction, and he's won big.", m: "eBay sniping at 11:58pm counts, and he has a technique." },
+        { s: "Shops by appointment", a: 'rich', L: 106,
+          r: "The boutique closes FOR him. Champagne appears unbidden.", p: "The thrift store needs no appointment and has better plot twists.", m: "Once put a Costco run in his calendar as 'errand block.'" },
+        { s: "The house has a commercial ice machine", a: 'rich', L: 92,
+          r: "Clear cubes, sphere molds for scotch, pellet ice for the kids.", p: "Ice trays, refilled by whoever finishes them. So: nobody.", m: "The fridge door does crushed OR cubed, and that's luxury enough." },
+        { s: "Has personal stationery", a: 'rich', L: 84,
+          r: "Engraved cards for thank-you notes nobody expected.", p: "Notes go on whatever's near. Napkin contracts are binding (see: word).", m: "A drawer of blank 'just in case' cards untouched since 2019." },
+        { s: "Has a walk-in humidor", a: 'rich', L: 96,
+          r: "Pre-embargo Cubans at 70% humidity, exactly.", p: "A gas station cigarillo on the porch does the same job.", m: "One cigar a year at a bachelor party. Turns visibly green." },
+        { s: "Has a security detail at events", a: 'rich', L: 102,
+          r: "A calm man named Sasha scans the room and speaks to no one.", p: "His security detail is being FROM there. Untouchable.", m: "Pepper spray on a keychain, never once opened." },
+        { s: "Owns land in another country", a: 'rich', L: 112,
+          r: "'The place in Tuscany.' The olive oil has the family name on it.", p: "Family land 'back home,' in dispute since 1962.", m: "A timeshare week in Cabo (see: presentation)." },
+        { s: "Has a stylist", a: 'rich', L: 88,
+          r: "Clothes arrive seasonally in garment bags, pre-chosen, correct.", p: "His stylist runs the church donation rack and has a good eye.", m: "A Stitch Fix box he keeps forgetting to send back." },
+        { s: "Airport lounge access, plural", a: 'rich', L: 118,
+          r: "Centurion, Polaris, and a card that opens all of them.", p: "The airport is a bench, and the bench is free.", m: "Priority Pass from a credit card. Mentions it at the buffet." },
+        { s: "Has a tennis court", a: 'rich', L: 94,
+          r: "Resurfaced yearly, used monthly, lit for night games nobody plays.", p: "The hoop is bolted to a telephone pole and it produced real players.", m: "Reserves the Y's racquetball room with a laminated key tag." },
+        { s: "The kids fly unaccompanied, up front", a: 'rich', L: 90,
+          r: "The 8-year-old turns left when boarding. The crew knows her.", p: "The 8-year-old navigates three bus transfers like a veteran.", m: "The 8-year-old has never been out of arm's reach at the airport." },
+
+        // ---- EXPANSION PACK 3: POOR ONLY 🥫 ----
+        { s: "Knows which vending machine drops doubles", a: 'poor', L: 132,
+          r: "Vending machines are an airport rumor he's never verified.", p: "B4 on the third floor drops two if you time the coil. Knowledge.", m: "Taps a card for a $3.50 water without blinking or joy." },
+        { s: "One phone charger for the whole house", a: 'poor', L: 141,
+          r: "Chargers bloom in every room, every car, every bag. Staff replenish.", p: "ONE cord — frayed, taped, guarded like a family relic.", m: "A drawer of thirty cables for devices that no longer exist." },
+        { s: "Knows the laundromat machines by personality", a: 'poor', L: 124,
+          r: "Laundry departs and returns folded. Machines are theoretical.", p: "Number 7 eats quarters. Number 12 runs long. Everyone knows.", m: "An LG tower with steam cycles and a lint-trap ritual." },
+        { s: "Everything important is in a shoebox", a: 'poor', L: 128,
+          r: "Documents live with the lawyers, the vault, the family office.", p: "Birth certificates, titles, photos: the shoebox under the bed.", m: "A fireproof Amazon 'document safe' organized with color tabs." },
+        { s: "The car has a starting ritual", a: 'poor', L: 145,
+          r: "Cars start. That's the entire relationship.", p: "Pump twice, hold the key, whisper to her. She goes. She always goes.", m: "Push-button start from the app, cabin pre-warmed to 72." },
+        { s: "Will drive 40 minutes for a free couch", a: 'poor', L: 130,
+          r: "Furniture arrives via designer. Distance unlimited. Price comical.", p: "A free sectional at 40 minutes beats a paid one at 10. Math.", m: "Marketplace pickup anxiety. Brings a friend. Still overpays." },
+        { s: "Soda comes in 2-liters only", a: 'poor', L: 115,
+          r: "Mexican Cokes in glass, or the house sparkling. No plastic.", p: "2-liters from the store, cups of ice at home. That's economics.", m: "A case of cans that everyone opens, half-finishes, abandons." },
+        { s: "The lawnmower is borrowed. Permanently.", a: 'poor', L: 119,
+          r: "A crew mows (see: lawn). He couldn't point to a mower.", p: "Dale's mower has lived at three houses. Dale knows. It's fine.", m: "Two mowers: the good one and the backup. Neither leaves the garage." },
+        { s: "Bought shoes from a car trunk", a: 'poor', L: 121,
+          r: "Also buys from trunk shows. Different trunks entirely.", p: "Trunk commerce is real commerce. Good price, no box, no problem.", m: "Only buys from stores with return policies (see: return pile)." },
+        { s: "The kettle does dishes sometimes", a: 'poor', L: 104,
+          r: "Instant-hot taps at every sink, water softened, obviously.", p: "When the heater acts up, the kettle steps up. Adaptation.", m: "Complains that the dishwasher's sanitize cycle takes three hours." },
+        { s: "Owes the mechanic $60 and it's fine", a: 'poor', L: 126,
+          r: "Humans are not invoiced. Bills evaporate at the office.", p: "Ray knows he's good for it. Ray gets paid on the 3rd. Always has.", m: "Would rather die than owe a person. Owes banks $310,000." },
+        { s: "The bike is transportation, not exercise", a: 'poor', L: 110,
+          r: "A $12,000 carbon bike ridden in full Lycra on Saturdays only.", p: "The bike gets him to work, rain or shine, zero spandex.", m: "A Peloton (see: coat rack)." },
+        { s: "The Christmas bonus is a ham", a: 'poor', L: 117,
+          r: "Bonus season means seven figures and a complaint about taxes.", p: "The job gave out hams. It's a good job. The ham was great.", m: "A $50 Visa gift card and a pizza party with mandatory attendance." },
+
+        // ---- EXPANSION PACK 3: MIDDLE CLASS ONLY 📊 ----
+        { s: "Gets to the airport three hours early", a: 'mid', L: 175,
+          r: "The plane leaves when he arrives. That's what planes are for.", p: "The Greyhound boards when it boards. Zen is mandatory.", m: "Through security in 9 minutes, then two hours of gate laps." },
+        { s: "Runs the dishwasher at night 'for the rates'", a: 'mid', L: 148,
+          r: "Has never seen an electric bill (see: bills).", p: "Rates? The power's in Tammy's name (see: Tammy).", m: "Read about off-peak pricing once. The dishwasher runs at 9:47pm forever." },
+        { s: "Owns a gravy boat with one job", a: 'mid', L: 139,
+          r: "The silver gravy boat gets polished by staff for 'Friendsgiving.'", p: "Gravy is served in the pan it was made in, which is correct.", m: "A registry gravy boat that works one Thursday per year." },
+        { s: "Buys the 'good gas' as a treat", a: 'mid', L: 152,
+          r: "The cars drink 93 exclusively. All ten of them (see: driveway).", p: "87. Sometimes 85 if the state allows it. The car is fine.", m: "89 on road trips, 'as a treat for the engine.' The engine can't tell." },
+        { s: "The kids' schedule needs a command center", a: 'mid', L: 158,
+          r: "The nanny runs logistics. There is, seriously, a family Slack.", p: "Kids are wherever the block is. They come home at dark. System works.", m: "A mudroom whiteboard: color-coded, magnetic, laminated, feared." },
+        { s: "Watches 40 minutes of reviews for a $30 purchase", a: 'mid', L: 171,
+          r: "Buys all three options and keeps whichever the housekeeper likes.", p: "Buys the cheapest one. It's fine. It's always been fine.", m: "Reads the 1-star reviews twice, then the 3-stars 'for balance.'" },
+        { s: "The donate pile is aging like wine", a: 'mid', L: 144,
+          r: "A charity truck comes. Someone else decides what goes on it.", p: "Nothing gets donated. Everything gets used or sold (see: yard sale).", m: "Three Goodwill bags riding in the trunk since March (see: returns)." },
+        { s: "Has flooring opinions", a: 'mid', L: 137,
+          r: "The floors are walnut. He learned that when he bought the house.", p: "The floors are floors. Some are even floor-colored.", m: "LVP vs. engineered hardwood: a 6-month research arc with samples." },
+        { s: "Refuses the $14 stadium beer", a: 'mid', L: 163,
+          r: "The suite has an open bar. Beer prices are trivia to him.", p: "Tailgates properly and walks in fed, hydrated, and happy.", m: "Complains about $14 beers. Buys two. Posts the receipt." },
+        { s: "Has a no-phones-at-dinner basket", a: 'mid', L: 149,
+          r: "Dinner has courses. Phones stay with the coats.", p: "The TV is dinner company, and it's wonderful company.", m: "A wicker basket that everyone resents and nobody obeys." },
+        { s: "The mattress took three months of research", a: 'mid', L: 141,
+          r: "A Hästens. It costs what cars cost. He shrugged.", p: "The mattress came with the apartment or the marriage.", m: "97 tabs, 4 showrooms, and a 100-night trial tracked to night 99." },
+        { s: "Asks for the WiFi password everywhere", a: 'mid', L: 133,
+          r: "His phone works everywhere. He has never asked. Data is infinite.", p: "Knows which parking lots have free WiFi (see: library).", m: "Asks at the dentist, the in-laws, the campsite. Airplane mode is trauma." },
+        { s: "The tire pressure light causes a spiral", a: 'mid', L: 146,
+          r: "A light means the car goes away (see: check engine).", p: "The light's been on so long it's functionally off.", m: "Pulls over, reads the manual, visits three gas stations, buys a gauge." },
+        { s: "Schedules spontaneity", a: 'mid', L: 154,
+          r: "Fun is Tuesday. And Wednesday. And whenever. Calendars are for staff.", p: "Fun shows up unscheduled and stays late. Always has.", m: "'Spontaneous day trip' is a calendar block two Saturdays out, 2–4pm." }
+    ];
+
+    // ====== COMMUNITY SUBMISSIONS ======
+    const SEED_SUBS = [
+        { id: 's1',  s: "Wears Crocs everywhere", a: 'both', by: '@swampthing88', v: 412, why: "Rich wear them ironically, poor wear them practically. Middle class owns 'weekend shoes.'" },
+        { id: 's2',  s: "Has a fish fry every Friday", a: 'both', by: '@bassmaster_ted', v: 356 },
+        { id: 's3',  s: "Doesn't know what their spouse does all day", a: 'both', by: '@justasking_jan', v: 301 },
+        { id: 's4',  s: "Owns a metal detector", a: 'both', by: '@beachcomber_bill', v: 287 },
+        { id: 's5',  s: "Argues with the TV during the game", a: 'both', by: '@couchcoach', v: 244 },
+        { id: 's6',  s: "Has a room nobody is allowed in", a: 'both', by: '@formal_living', v: 233, why: "The gallery vs. the room with the good couch. The middle class uses every room they pay for." },
+        { id: 's7',  s: "Kid had a four-wheeler before a bicycle", a: 'poor', by: '@yeehaw_mom', v: 198 },
+        { id: 's8',  s: "Puts ketchup on steak", a: 'both', by: '@welldone_wanda', v: 176 },
+        { id: 's9',  s: "Falls asleep in church", a: 'both', by: '@pew_snoozer', v: 154 },
+        { id: 's10', s: "Has a cousin named Bubba", a: 'both', by: '@bubba_himself', v: 149 },
+        { id: 's11', s: "Wears a suit to the casino", a: 'poor', by: '@vegas_vinny', v: 121 },
+        { id: 's12', s: "Names the WiFi something 'hilarious'", a: 'mid', by: '@routerdad', v: 103 }
+    ];
+
+    // Content check: normalized profanity/slur screen + basic quality rules
+    const BAD_CORE = ['fuck','shit','bitch','cunt','pussy','faggot','nigg','retard','kike','tranny','whore','slut','cocksuck','dickhead','motherfuck','jerkoff','blowjob','handjob','asshole','dumbass','jackass'];
+    const BAD_WORDS = ['ass','asses','dick','cock','piss','tit','tits','cum','rape','rapist','nazi','hitler','spic','chink','porn','anal','penis','vagina','boobs','nude','naked','sex','stripper','hooker'];
+    const LEET = { '4':'a','1':'i','!':'i','3':'e','0':'o','5':'s','$':'s','@':'a','7':'t' };
+
+    function contentOk(text) {
+        const lower = text.toLowerCase();
+        const collapsed = lower.replace(/[413!05$@7]/g, c => LEET[c]).replace(/[^a-z]/g, '');
+        if (BAD_CORE.some(w => collapsed.includes(w))) return false;
+        if (BAD_WORDS.some(w => new RegExp('\\b' + w + '\\b').test(lower))) return false;
+        return true;
+    }
+
+    const LS_SUBS = 'rmpm_my_subs', LS_SUBVOTES = 'rmpm_sub_votes';
+    const mySubs = () => JSON.parse(localStorage.getItem(LS_SUBS) || '[]');
+    const subVotes = () => JSON.parse(localStorage.getItem(LS_SUBVOTES) || '{}');
+    const esc = t => t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    const CAT_CHIP = { both: '🤝 Rich Man Poor Man', rich: '🎩 Rich only', poor: '🥫 Poor only', mid: '📊 Middle class' };
+
+    function renderSubs() {
+        const votes = subVotes();
+        const all = [...SEED_SUBS, ...mySubs()]
+            .map(sub => ({ ...sub, total: sub.v + (votes[sub.id] ? 1 : 0) }))
+            .sort((a, b) => b.total - a.total);
+        $('subsList').innerHTML = all.map(sub => `
+            <div class="flex items-center gap-3 bg-black/30 rounded-xl px-4 py-3 border border-white/5">
+                <div class="flex-1 min-w-0">
+                    <p class="font-bold text-sm md:text-base leading-snug">${esc(sub.s)}</p>
+                    ${sub.why ? `<p class="text-[11px] text-gray-500 mt-0.5">${esc(sub.why)}</p>` : ''}
+                    <p class="text-[10px] uppercase tracking-widest mt-1 ${sub.a === 'both' ? 'text-gold' : 'text-gray-600'}">${CAT_CHIP[sub.a]} · <span class="text-cash normal-case">${esc(sub.by)}</span></p>
+                </div>
+                <button onclick="voteSub('${sub.id}')" class="shrink-0 text-xs font-bold px-3 py-2 rounded-full border transition ${votes[sub.id] ? 'bg-cash text-black border-cash' : 'border-white/15 text-gray-400 hover:border-cash hover:text-cash'}">
+                    👍 ${sub.total.toLocaleString()}
+                </button>
+            </div>`).join('');
+    }
+
+    function voteSub(id) {
+        const votes = subVotes();
+        if (votes[id]) { delete votes[id]; } else { votes[id] = 1; toast('Vote counted! 🗳️'); }
+        localStorage.setItem(LS_SUBVOTES, JSON.stringify(votes));
+        renderSubs();
+    }
+
+    function submitIdea() {
+        const msg = $('subMsg'), btn = $('subBtn');
+        const s = $('subStatement').value.trim().replace(/\s+/g, ' ');
+        const why = $('subWhy').value.trim();
+        const cat = $('subCat').value;
+        const fail = reason => { msg.className = 'text-xs text-center font-bold min-h-[1rem] text-red-400'; msg.innerText = reason; };
+
+        if (s.length < 8) return fail('❌ Too short — give us the full thought.');
+        const norm = t => t.toLowerCase().replace(/[^a-z]/g, '');
+        const exists = [...ITEMS.map(i => i.s), ...SEED_SUBS.map(x => x.s), ...mySubs().map(x => x.s)].some(t => norm(t) === norm(s));
+        if (exists) return fail('❌ That one\'s already on the board — great minds.');
+
+        btn.disabled = true;
+        msg.className = 'text-xs text-center font-bold min-h-[1rem] text-gray-400';
+        msg.innerText = '🔎 Running content check...';
+        setTimeout(() => {
+            btn.disabled = false;
+            if (!contentOk(s) || (why && !contentOk(why))) {
+                return fail('❌ Didn\'t pass the content check. Keep it clean — the comedy\'s in the observation.');
+            }
+            const subs = mySubs();
+            const sub = { id: 'u' + Date.now(), s, a: cat, by: 'you', v: 0, ...(why ? { why } : {}) };
+            subs.push(sub);
+            localStorage.setItem(LS_SUBS, JSON.stringify(subs));
+            const votes = subVotes(); votes[sub.id] = 1;
+            localStorage.setItem(LS_SUBVOTES, JSON.stringify(votes));
+            $('subStatement').value = ''; $('subWhy').value = '';
+            msg.className = 'text-xs text-center font-bold min-h-[1rem] text-cash';
+            msg.innerText = '✅ Passed the check — it\'s live in Community Picks!';
+            renderSubs();
+            toast('💡 Submission live!');
+        }, 900);
+    }
+
+    // ====== STATE ======
+    const LS_LIKES = 'rmpm_likes', LS_BEST = 'rmpm_best';
+    let deck = [], round = 0, score = 0, streak = 0, correct = 0, results = [], current = null, answered = false;
+
+    const $ = id => document.getElementById(id);
+    const myLikes = () => JSON.parse(localStorage.getItem(LS_LIKES) || '{}');
+
+    function likesFor(i) { return ITEMS[i].L + (myLikes()[i] ? 1 : 0); }
+
+    function toast(msg) {
+        const t = $('toast'); t.innerText = msg; t.style.opacity = 1;
+        setTimeout(() => t.style.opacity = 0, 2200);
+    }
+
+    // ====== TOP 5 HALL OF FAME ======
+    function renderTop5() {
+        const liked = myLikes();
+        const top = ITEMS.map((it, i) => ({ it, i, n: likesFor(i) }))
+            .sort((a, b) => b.n - a.n).slice(0, 5);
+        const medals = ['🥇','🥈','🥉','4','5'];
+        $('top5').innerHTML = top.map((e, rank) => `
+            <div class="flex items-center gap-3 bg-black/30 rounded-xl px-4 py-3 border border-white/5">
+                <span class="w-7 text-center font-black ${rank < 3 ? 'text-xl' : 'text-gray-600 text-sm'}">${medals[rank]}</span>
+                <div class="flex-1 min-w-0">
+                    <p class="font-bold text-sm md:text-base leading-snug">${e.it.s}</p>
+                    <p class="text-[10px] uppercase tracking-widest ${e.it.a==='both'?'text-gold':'text-gray-600'}">${e.it.a==='both'?'🤝 Rich Man Poor Man':e.it.a==='rich'?'🎩 Rich only':e.it.a==='poor'?'🥫 Poor only':'📊 Middle class'}</p>
+                </div>
+                <button onclick="voteFromBoard(${e.i})" class="shrink-0 text-xs font-bold px-3 py-2 rounded-full border transition ${liked[e.i] ? 'bg-gold text-black border-gold' : 'border-white/15 text-gray-400 hover:border-gold hover:text-gold'}">
+                    👍 ${e.n.toLocaleString()}
+                </button>
+            </div>`).join('');
+    }
+
+    function voteFromBoard(i) {
+        const likes = myLikes();
+        if (likes[i]) { delete likes[i]; } else { likes[i] = 1; toast("Vote counted! 🤝"); }
+        localStorage.setItem(LS_LIKES, JSON.stringify(likes));
+        renderTop5();
+    }
+
+    // ====== GAME FLOW ======
+    function shuffle(a, rnd = Math.random) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+    function buildDeck(rnd = Math.random) {
+        const pool = c => shuffle(ITEMS.map((it, i) => ({ ...it, i })).filter(x => x.a === c), rnd);
+        return shuffle([...pool('both').slice(0, 4), ...pool('rich').slice(0, 2), ...pool('poor').slice(0, 2), ...pool('mid').slice(0, 2)], rnd);
+    }
+
+    // ====== DAILY CHALLENGE ======
+    const DAY0 = Date.UTC(2026, 6, 10); // launch epoch
+    const LS_DAILY = 'rmpm_daily';
+    let dailyMode = false;
+    function todayKey(offsetDays = 0) {
+        const d = new Date();
+        d.setDate(d.getDate() + offsetDays); // calendar-safe across DST transitions
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+    function dailyNum() {
+        const d = new Date();
+        return Math.max(1, Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - DAY0) / 86400000) + 1);
+    }
+    function hashStr(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+    function mulberry32(seed) {
+        return function () {
+            seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+            let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+            t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        };
+    }
+    const dailyData = () => JSON.parse(localStorage.getItem(LS_DAILY) || '{}');
+
+    function startGame(mode = 'free') {
+        dailyMode = mode === 'daily';
+        deck = buildDeck(dailyMode ? mulberry32(hashStr('rmpm' + todayKey())) : Math.random);
+        round = 0; score = 0; streak = 0; correct = 0; results = [];
+        $('startScreen').classList.add('hidden');
+        $('endScreen').classList.add('hidden'); $('endScreen').classList.remove('flex');
+        $('gameScreen').classList.remove('hidden'); $('gameScreen').classList.add('flex');
+        showRound();
+        window.scrollTo(0, 0);
+    }
+
+    function showRound() {
+        current = deck[round]; answered = false;
+        $('statement').innerText = current.s;
+        $('questionCard').classList.remove('card-flip'); void $('questionCard').offsetWidth;
+        $('questionCard').classList.add('card-flip');
+        $('reveal').classList.add('hidden');
+        $('answerBtns').classList.remove('hidden');
+        $('scoreDisplay').innerText = score;
+        $('streakDisplay').innerText = streak >= 2 ? `🔥 ${streak} streak` : '';
+        $('roundDots').innerHTML = deck.map((_, i) =>
+            `<div class="w-3 h-3 rounded-full ${i < round ? (results[i] ? 'bg-gold' : 'bg-red-500/70') : i === round ? 'bg-white' : 'bg-white/15'}"></div>`).join('');
+    }
+
+    function answer(choice) {
+        if (answered) return; answered = true;
+        const right = choice === current.a;
+        results.push(right);
+        if (right) { streak++; correct++; score += 100 + (streak >= 2 ? streak * 25 : 0); }
+        else { streak = 0; }
+
+        const names = { rich: '🎩 Rich Man only', poor: '🥫 Poor Man only', both: '🤝 BOTH — Rich Man Poor Man!', mid: '📊 Middle Class only' };
+        $('answerBtns').classList.add('hidden');
+        const box = $('revealBox');
+        box.className = `bg-panel rounded-[2rem] border p-7 md:p-9 shadow-2xl mb-4 ${right ? 'border-gold/60' : 'border-red-500/40'}`;
+        $('revealEmoji').innerText = right ? (current.a === 'both' ? '🤝' : '✅') : '💸';
+        $('revealEmoji').className = right && current.a === 'both' ? 'text-6xl mb-3 handshake-big' : 'text-6xl mb-3';
+        $('revealTitle').innerText = right ? (current.a === 'both' ? 'RICH MAN POOR MAN!' : 'CORRECT!') : 'WRONG!';
+        $('revealTitle').className = `text-3xl font-black ${right ? 'text-gold' : 'text-red-400'}`;
+        $('revealSub').innerText = `Answer: ${names[current.a]}${right && streak >= 2 ? ` · 🔥 +${100 + streak * 25} pts` : right ? ' · +100 pts' : ''}`;
+        $('lineRich').innerText = current.r;
+        $('linePoor').innerText = current.p;
+        $('lineMid').innerText = current.m;
+        $('scoreDisplay').innerText = score;
+        $('streakDisplay').innerText = streak >= 2 ? `🔥 ${streak} streak` : '';
+        updateLikeBtn();
+        $('nextBtn').innerText = round === deck.length - 1 ? 'See Results →' : 'Next →';
+        $('reveal').classList.remove('hidden');
+        if (!right) { box.classList.add('shake'); setTimeout(() => box.classList.remove('shake'), 400); }
+        $('roundDots').innerHTML = deck.map((_, i) =>
+            `<div class="w-3 h-3 rounded-full ${i <= round ? (results[i] ? 'bg-gold' : 'bg-red-500/70') : 'bg-white/15'}"></div>`).join('');
+    }
+
+    function updateLikeBtn() {
+        const liked = myLikes()[current.i];
+        $('likeBtn').className = `flex-1 py-3 rounded-xl border-2 transition font-bold text-sm ${liked ? 'border-gold bg-gold/15 text-gold' : 'border-white/15 hover:border-gold hover:bg-gold/10 text-gray-300'}`;
+        $('likeBtn').firstChild.textContent = liked ? '👍 Liked! ' : '👍 Solid one ';
+        $('likeCount').innerText = `· ${likesFor(current.i).toLocaleString()}`;
+    }
+
+    function likeCurrent() {
+        const likes = myLikes();
+        if (likes[current.i]) { delete likes[current.i]; } else { likes[current.i] = 1; toast("Added to the Hall of Fame votes 🏆"); }
+        localStorage.setItem(LS_LIKES, JSON.stringify(likes));
+        updateLikeBtn();
+    }
+
+    function nextRound() {
+        round++;
+        if (round >= deck.length) return endGame();
+        showRound();
+        window.scrollTo(0, 0);
+    }
+
+    // ====== END ======
+    const RANKS = [
+        { min: 10, t: 'ECONOMIC HORSESHOE GENIUS', d: 'Perfect game. You understand that the very top and the very bottom are the same beautiful circle.', e: '🤝' },
+        { min: 8,  t: 'OLD MONEY ENERGY', d: "You've clearly spent time in both a country club and a check-cashing place.", e: '🎩' },
+        { min: 6,  t: 'NEW MONEY', d: 'Solid instincts, but you still tip like someone who checks the bill.', e: '💵' },
+        { min: 4,  t: 'UPPER MIDDLE CLASS', d: "Dangerously comfortable. You own a wine fridge, don't you?", e: '🏘️' },
+        { min: 2,  t: 'SUBURBAN DAD', d: 'You mowed the lawn before playing this, didn’t you? Saturday. 9am.', e: '🚗' },
+        { min: 0,  t: 'PEAK MIDDLE CLASS', d: 'Pays taxes, waits in lines, RSVPs on time. The rich and poor salute you — from far away.', e: '📊' }
+    ];
+
+    function endGame() {
+        $('gameScreen').classList.add('hidden'); $('gameScreen').classList.remove('flex');
+        $('endScreen').classList.remove('hidden'); $('endScreen').classList.add('flex');
+        const rank = RANKS.find(r => correct >= r.min);
+        $('rankTitle').innerText = rank.t;
+        $('rankDesc').innerText = rank.d;
+        $('endEmoji').innerText = rank.e;
+        $('finalScore').innerText = score;
+        $('finalCorrect').innerText = correct;
+        $('emojiGrid').innerText = results.map(r => r ? '🤝' : '📊').join('');
+        const best = parseInt(localStorage.getItem(LS_BEST) || '0');
+        if (score > best) { localStorage.setItem(LS_BEST, score); toast('🏆 New personal best!'); }
+        if (dailyMode) {
+            const dd = dailyData();
+            if (dd.last !== todayKey()) {
+                dd.streak = dd.last === todayKey(-1) ? (dd.streak || 0) + 1 : 1;
+                dd.last = todayKey();
+                localStorage.setItem(LS_DAILY, JSON.stringify(dd));
+                if (dd.streak > 1) toast(`🔥 Daily streak: ${dd.streak}`);
+            }
+        }
+        window.scrollTo(0, 0);
+    }
+
+    // ====== SHARING ======
+    const SHARE_URL = location.hostname === 'localhost' ? location.origin + location.pathname : 'https://richmanpoorman.crystllabs.com/';
+
+    function resultText() {
+        const rank = RANKS.find(r => correct >= r.min);
+        const head = dailyMode ? `RICH MAN 🤝 POOR MAN — Daily #${dailyNum()}` : 'RICH MAN 🤝 POOR MAN';
+        return `${head}\n${results.map(r => r ? '🤝' : '📊').join('')} ${correct}/${results.length} — ${score} pts\nRank: ${rank.t}\nCan you spot what the rich and poor have in common?`;
+    }
+
+    function copyText(text, msg) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => toast(msg)).catch(() => prompt('Copy:', text));
+        } else { prompt('Copy:', text); }
+    }
+
+    function shareScore() { copyText(resultText() + '\n' + SHARE_URL, '📋 Copied! Go brag.'); }
+
+    function nativeShare() {
+        if (navigator.share) {
+            navigator.share({ title: 'Rich Man Poor Man', text: resultText(), url: SHARE_URL }).catch(() => {});
+        } else { shareScore(); }
+    }
+
+    function shareTo(network) {
+        const text = encodeURIComponent(resultText());
+        const url = encodeURIComponent(SHARE_URL);
+        const title = encodeURIComponent(`I scored ${correct}/${results.length} on Rich Man Poor Man${dailyMode ? ` (Daily #${dailyNum()})` : ''} — can you beat me?`);
+        const links = {
+            x: `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
+            facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+            whatsapp: `https://wa.me/?text=${text}%0A${url}`,
+            reddit: `https://www.reddit.com/submit?url=${url}&title=${title}`,
+            telegram: `https://t.me/share/url?url=${url}&text=${text}`
+        };
+        window.open(links[network], '_blank', 'noopener');
+    }
+
+    function shareCard() {
+        const c = current;
+        const text = `RICH MAN 🤝 POOR MAN — who does it? "${c.s}"\n🎩 Rich man: ${c.r}\n🥫 Poor man: ${c.p}\n📊 Middle class: ${c.m}\nPlay ${ITEMS.length} more:`;
+        if (navigator.share) {
+            navigator.share({ title: 'Rich Man Poor Man', text, url: SHARE_URL }).catch(() => {});
+        } else { copyText(text + ' ' + SHARE_URL, '📋 Copied — post it anywhere.'); }
+    }
+
+    function goHome() {
+        $('gameScreen').classList.add('hidden'); $('gameScreen').classList.remove('flex');
+        $('endScreen').classList.add('hidden'); $('endScreen').classList.remove('flex');
+        $('startScreen').classList.remove('hidden');
+        renderTop5(); renderBest(); renderSubs();
+        window.scrollTo(0, 0);
+    }
+
+    function renderBest() {
+        const best = parseInt(localStorage.getItem(LS_BEST) || '0');
+        $('bestScore').innerText = best ? `Your best: ${best} pts` : 'First time? The middle class never wins. Prove you\'re not middle class.';
+        $('dailyBtn').innerText = `🗓️ Daily Challenge #${dailyNum()}`;
+        const dd = dailyData();
+        $('dailyStatus').innerText = dd.last === todayKey()
+            ? `✓ Today's done${dd.streak > 1 ? ` · 🔥 ${dd.streak}-day streak` : ''} — same 10 for everyone, resets at midnight`
+            : (dd.streak >= 1 && dd.last === todayKey(-1) ? `🔥 ${dd.streak}-day streak on the line` : 'Same 10 rounds for everyone · resets at midnight');
+    }
+
+    // ====== KEYBOARD ======
+    document.addEventListener('keydown', e => {
+        if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) return;
+        if ($('gameScreen').classList.contains('hidden')) return;
+        if (!answered && ['1', '2', '3', '4'].includes(e.key)) answer(['rich', 'poor', 'both', 'mid'][+e.key - 1]);
+        else if (answered && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); nextRound(); }
+    });
+
+    document.getElementById('deckSize').innerText = `${ITEMS.length} scenarios · fresh draw every round`;
+    renderTop5(); renderBest(); renderSubs();
+
+    // ====== PWA ======
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+    let installPrompt = null;
+    window.addEventListener('beforeinstallprompt', e => {
+        e.preventDefault();
+        installPrompt = e;
+        $('installBtn').classList.remove('hidden');
+    });
+    function installApp() {
+        if (!installPrompt) return;
+        installPrompt.prompt();
+        installPrompt.userChoice.finally(() => { installPrompt = null; $('installBtn').classList.add('hidden'); });
+    }
+    window.addEventListener('appinstalled', () => {
+        $('installBtn').classList.add('hidden');
+        toast('📲 Installed! Check your home screen.');
+    });
+    </script>
+</body>
+</html>
