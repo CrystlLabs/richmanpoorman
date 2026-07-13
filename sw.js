@@ -1,5 +1,5 @@
 // Rich Man Poor Man — service worker. Bump CACHE version on any deploy.
-const CACHE = 'rmpm-v6';
+const CACHE = 'rmpm-v7';
 const PRECACHE = [
     './',
     './index.html',

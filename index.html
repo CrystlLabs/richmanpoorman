@@ -1177,18 +1177,16 @@
     }
 
     // ====== DAILY CHALLENGE ======
-    const DAY0 = Date.UTC(2026, 6, 10); // launch epoch
+    const DAY0 = Date.UTC(2026, 6, 13, 3); // launch epoch: noon KST (03:00 UTC), Jul 13 2026 = Day 1
     const LS_DAILY = 'rmpm_daily';
     let dailyMode = false;
-    function todayKey(offsetDays = 0) {
-        const d = new Date();
-        d.setDate(d.getDate() + offsetDays); // calendar-safe across DST transitions
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    // Global day index off a fixed instant: every player worldwide is on the same
+    // daily at once, and the set flips at noon KST (03:00 UTC) each day.
+    function dayIndex(offsetDays = 0) {
+        return Math.floor((Date.now() - DAY0) / 86400000) + offsetDays;
     }
-    function dailyNum() {
-        const d = new Date();
-        return Math.max(1, Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - DAY0) / 86400000) + 1);
-    }
+    function todayKey(offsetDays = 0) { return 'd' + dayIndex(offsetDays); }
+    function dailyNum() { return Math.max(1, dayIndex() + 1); }
     function hashStr(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
     function mulberry32(seed) {
         return function () {
@@ -1371,8 +1369,8 @@
         $('dailyBtn').innerText = `🗓️ Daily Challenge #${dailyNum()}`;
         const dd = dailyData();
         $('dailyStatus').innerText = dd.last === todayKey()
-            ? `✓ Today's done${dd.streak > 1 ? ` · 🔥 ${dd.streak}-day streak` : ''} — same 10 for everyone, resets at midnight`
-            : (dd.streak >= 1 && dd.last === todayKey(-1) ? `🔥 ${dd.streak}-day streak on the line` : 'Same 10 rounds for everyone · resets at midnight');
+            ? `✓ Today's done${dd.streak > 1 ? ` · 🔥 ${dd.streak}-day streak` : ''} — same 10 for everyone, resets at noon KST`
+            : (dd.streak >= 1 && dd.last === todayKey(-1) ? `🔥 ${dd.streak}-day streak on the line` : 'Same 10 rounds for everyone · resets at noon KST');
     }
 
     // ====== KEYBOARD ======
@@ -1385,6 +1383,13 @@
 
     document.getElementById('deckSize').innerText = `${ITEMS.length} scenarios · fresh draw every round`;
     renderTop5(); renderBest(); renderSubs();
+
+    // PWA/tab resume freezes the JS heap: the day label is computed once and never
+    // re-runs on background→foreground. Recompute when the app regains focus so a
+    // stale "Daily #N" flips to the current day without a manual reload.
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && !$('startScreen').classList.contains('hidden')) renderBest();
+    });
 
     // ====== PWA ======
     if ('serviceWorker' in navigator) {
