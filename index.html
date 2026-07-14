@@ -1788,8 +1788,9 @@
 
     function resultText() {
         const rank = RANKS.find(r => correct >= r.min);
-        const head = dailyMode ? `RICH MAN 🤝 POOR MAN — Daily #${dailyNum()}` : 'RICH MAN 🤝 POOR MAN';
-        return `${head}\n${results.map(r => r ? '🤝' : '📊').join('')} ${correct}/${results.length} — ${score} pts\nRank: ${rank.t}\nCan you spot what the rich and poor have in common?`;
+        const dailyLine = dailyMode ? `\nDaily #${dailyNum()}` : '';
+        const emojis = results.map(r => r ? '🤝' : '📊').join('');
+        return `RICH MAN 🤝 POOR MAN${dailyLine}\n${emojis}\n${correct}/${results.length} — ${score} pts\n\nRank: ${rank.t}\nCan you spot what the rich and poor have in common?`;
     }
 
     function copyText(text, msg) {
