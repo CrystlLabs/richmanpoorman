@@ -1,5 +1,8 @@
 // Rich Man Poor Man — service worker. Bump CACHE version on any deploy.
-const CACHE = 'rmpm-v7';
+const CACHE = 'rmpm-v8';
+
+// Ad / analytics hosts must never be intercepted or cached — they need to hit the network live.
+const BYPASS = /(googlesyndication\.com|doubleclick\.net|googleadservices\.com|adtrafficquality\.google|google\.com\/(ads|pagead))/;
 const PRECACHE = [
     './',
     './index.html',
@@ -30,6 +33,7 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
     const req = e.request;
     if (req.method !== 'GET' || !req.url.startsWith('http')) return;
+    if (BYPASS.test(req.url)) return; // let ad requests go straight to the network
 
     // Navigations: network-first so deploys show up immediately; cache is the offline fallback.
     if (req.mode === 'navigate') {
