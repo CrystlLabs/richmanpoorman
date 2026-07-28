@@ -1,5 +1,5 @@
 // Rich Man Poor Man — service worker. Bump CACHE version on any deploy.
-const CACHE = 'rmpm-v9';
+const CACHE = 'rmpm-v10';
 
 // Ad / analytics hosts must never be intercepted or cached — they need to hit the network live.
 const BYPASS = /(googlesyndication\.com|doubleclick\.net|googleadservices\.com|adtrafficquality\.google|google\.com\/(ads|pagead))/;
